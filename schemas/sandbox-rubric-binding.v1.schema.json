@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://service.example.invalid/schemas/sandbox-rubric-binding.v1.schema.json",
+  "title": "EVA-Agent sandbox rubric binding v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "binding_id", "sandbox_id", "domain", "stage", "rubric_id",
+    "rubric_version", "rubric_digest", "registry_id", "registry_version",
+    "registry_digest"
+  ],
+  "properties": {
+    "schema": {"const": "eva.sandbox-rubric-binding.v1"},
+    "binding_id": {"type": "string", "format": "uuid"},
+    "sandbox_id": {"type": "string", "format": "uuid"},
+    "domain": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$"
+    },
+    "stage": {"enum": ["S1", "S2", "S3", "S4", "S5", "E2E"]},
+    "rubric_id": {"type": "string", "format": "uuid"},
+    "rubric_version": {"type": "integer", "minimum": 1},
+    "rubric_digest": {"type": "string", "pattern": "^blake3:[0-9a-f]{64}$"},
+    "registry_id": {"type": "string", "format": "uuid"},
+    "registry_version": {"type": "integer", "minimum": 1},
+    "registry_digest": {"type": "string", "pattern": "^blake3:[0-9a-f]{64}$"}
+  }
+}

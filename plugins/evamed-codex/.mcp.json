@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "evamed": {
+      "command": "python3",
+      "args": ["./scripts/evamed_mcp.py", "--stdio"],
+      "cwd": ".",
+      "tool_timeout_sec": 900
+    }
+  }
+}

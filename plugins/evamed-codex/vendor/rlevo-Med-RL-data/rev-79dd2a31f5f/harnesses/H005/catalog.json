@@ -1,0 +1,234 @@
+{
+  "schema": "batmed-training-aligned-skill-catalog-v1",
+  "skills": [
+    {
+      "allowed_stages": [
+        "S1",
+        "S3",
+        "S4",
+        "S5"
+      ],
+      "description": "Execute S3 pilots and S4 native materialization in the isolated environment, then require an independent S5 reopen.",
+      "document_path": "skills/agentic-environment-execution-med/SKILL.md",
+      "skill_id": "agentic-environment-execution-med",
+      "training_observation_count": 0
+    },
+    {
+      "allowed_stages": [
+        "S3",
+        "S5"
+      ],
+      "description": "Independently inspect and validate bounded medical-research artifacts before batch continuation or delivery.",
+      "document_path": "skills/artifact-verification-med/SKILL.md",
+      "skill_id": "artifact-verification-med",
+      "training_observation_count": 93
+    },
+    {
+      "allowed_stages": [
+        "S2",
+        "S3",
+        "S4"
+      ],
+      "description": "Use host-authorized data dictionaries, aggregate cohorts, and registered analyses with privacy-preserving, verifiable research controls.",
+      "document_path": "skills/clinical-data-pipeline-mini/SKILL.md",
+      "skill_id": "clinical-data-pipeline-mini",
+      "training_observation_count": 156
+    },
+    {
+      "allowed_stages": [
+        "S2",
+        "S3"
+      ],
+      "description": "Conduct a bounded host-simulated clinical dialogue using focused questions, examinations, and images without claiming real patient care.",
+      "document_path": "skills/clinical-dialogue-mini/SKILL.md",
+      "skill_id": "clinical-dialogue-mini",
+      "training_observation_count": 336
+    },
+    {
+      "allowed_stages": [
+        "S3"
+      ],
+      "description": "Use host-authorized longitudinal EHR quality and forecast tools with aggregate, provenance-bound outputs.",
+      "document_path": "skills/ehr-longitudinal-mini/SKILL.md",
+      "skill_id": "ehr-longitudinal-mini",
+      "training_observation_count": 132
+    },
+    {
+      "allowed_stages": [
+        "S2",
+        "S3",
+        "S4",
+        "S5"
+      ],
+      "description": "Build a traceable medical-research evidence summary from host-approved bounded sources, consultations, and analyses.",
+      "document_path": "skills/evidence-summary-med/SKILL.md",
+      "skill_id": "evidence-summary-med",
+      "training_observation_count": 203
+    },
+    {
+      "allowed_stages": [
+        "S1"
+      ],
+      "description": "Request one host-authorized stronger-model research consultation through an opaque bounded request and integrate it as fallible evidence.",
+      "document_path": "skills/expert-consultation-mini/SKILL.md",
+      "skill_id": "expert-consultation-mini",
+      "training_observation_count": 184
+    },
+    {
+      "allowed_stages": [
+        "S2",
+        "S3",
+        "S4",
+        "S5"
+      ],
+      "description": "Use host-bound FHIR research tools for bounded reads, searches, draft writes, and authorized commits with schema and privacy checks.",
+      "document_path": "skills/fhir-interop-mini/SKILL.md",
+      "skill_id": "fhir-interop-mini",
+      "training_observation_count": 803
+    },
+    {
+      "allowed_stages": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "description": "Conduct a bounded simulated clinical-research interaction using host-provided dialogue, exam, image, and evidence tools.",
+      "document_path": "skills/interactive-clinical-protocol-med/SKILL.md",
+      "skill_id": "interactive-clinical-protocol-med",
+      "training_observation_count": 180
+    },
+    {
+      "allowed_stages": [
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5"
+      ],
+      "description": "Plan and complete a bounded multi-stage medical-research task with checkpointed artifacts, pilots, validation, and final delivery.",
+      "document_path": "skills/long-horizon-execution-med/SKILL.md",
+      "skill_id": "long-horizon-execution-med",
+      "training_observation_count": 236
+    },
+    {
+      "allowed_stages": [
+        "S2",
+        "S3"
+      ],
+      "description": "Retrieve bounded evidence only from host-approved, versioned medical-research sources and preserve traceable limitations.",
+      "document_path": "skills/medical-s2-evidence-mini/SKILL.md",
+      "skill_id": "medical-s2-evidence-mini",
+      "training_observation_count": 112
+    },
+    {
+      "allowed_stages": [
+        "S3"
+      ],
+      "description": "Apply host-validated clinical research calculators and evidence-synthesis frameworks with explicit inputs, uncertainty, and verification.",
+      "document_path": "skills/medical-s3-judgment-mini/SKILL.md",
+      "skill_id": "medical-s3-judgment-mini",
+      "training_observation_count": 63
+    },
+    {
+      "allowed_stages": [
+        "S4"
+      ],
+      "description": "Integrate bounded medical-research evidence, analyses, and intermediate artifacts into a traceable draft for validation.",
+      "document_path": "skills/medical-s4-integration-mini/SKILL.md",
+      "skill_id": "medical-s4-integration-mini",
+      "training_observation_count": 50
+    },
+    {
+      "allowed_stages": [
+        "S3",
+        "S4",
+        "S5"
+      ],
+      "description": "Validate and deliver bounded medical-research artifacts with independent checks rather than treating an execution success as completion.",
+      "document_path": "skills/medical-s5-delivery-mini/SKILL.md",
+      "skill_id": "medical-s5-delivery-mini",
+      "training_observation_count": 210
+    },
+    {
+      "allowed_stages": [
+        "S2",
+        "S3"
+      ],
+      "description": "Inspect a host-bound medical image through a bounded visual tool and record observations without inventing image findings.",
+      "document_path": "skills/medical-visual-mini/SKILL.md",
+      "skill_id": "medical-visual-mini",
+      "training_observation_count": 237
+    },
+    {
+      "allowed_stages": [
+        "S2",
+        "S3"
+      ],
+      "description": "Review bounded host-approved medication-safety evidence for a research question without converting it into prescribing advice.",
+      "document_path": "skills/medication-safety-mini/SKILL.md",
+      "skill_id": "medication-safety-mini",
+      "training_observation_count": 287
+    },
+    {
+      "allowed_stages": [
+        "S2",
+        "S3"
+      ],
+      "description": "Review host-bound pathology regions and imaging volumes through bounded identifiers and verification artifacts.",
+      "document_path": "skills/pathology-volume-mini/SKILL.md",
+      "skill_id": "pathology-volume-mini",
+      "training_observation_count": 126
+    },
+    {
+      "allowed_stages": [
+        "S3",
+        "S4",
+        "S5"
+      ],
+      "description": "Maintain declared consent, privacy, de-identification, and analysis-governance boundaries throughout a medical-research workflow.",
+      "document_path": "skills/research-governance-mini/SKILL.md",
+      "skill_id": "research-governance-mini",
+      "training_observation_count": 161
+    },
+    {
+      "allowed_stages": [
+        "S4"
+      ],
+      "description": "Draft a bounded research protocol artifact from approved evidence, analysis plans, and host-provided templates.",
+      "document_path": "skills/research-protocol-mini/SKILL.md",
+      "skill_id": "research-protocol-mini",
+      "training_observation_count": 327
+    },
+    {
+      "allowed_stages": [
+        "S5"
+      ],
+      "description": "Produce a host-declared structured research artifact and submit it only after schema, completeness, and privacy validation.",
+      "document_path": "skills/structured-delivery-mini/SKILL.md",
+      "skill_id": "structured-delivery-mini",
+      "training_observation_count": 100
+    },
+    {
+      "allowed_stages": [
+        "S2",
+        "S3",
+        "S4",
+        "S5"
+      ],
+      "description": "Select and use only host-admitted native tools for bounded medical-research work instead of treating code execution as a universal capability.",
+      "document_path": "skills/tool-routing-mini/SKILL.md",
+      "skill_id": "tool-routing-mini",
+      "training_observation_count": 183
+    },
+    {
+      "allowed_stages": [
+        "S2",
+        "S3"
+      ],
+      "description": "Search a host-approved clinical-trial snapshot with bounded eligibility, intervention, outcome, or recruiting intent.",
+      "document_path": "skills/trial-matching-mini/SKILL.md",
+      "skill_id": "trial-matching-mini",
+      "training_observation_count": 287
+    }
+  ]
+}

@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://service.example.invalid/schemas/compiled-rubric-registry.v1.schema.json",
+  "title": "EVA-Agent compiled rubric registry v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "compiler_version", "source_schema", "registry_id",
+    "registry_version", "rubrics", "registry_digest"
+  ],
+  "properties": {
+    "schema": {"const": "eva.compiled-rubric-registry.v1"},
+    "compiler_version": {"const": "eva.rubric-compiler.v1"},
+    "source_schema": {"const": "eva.rubric-registry.v1"},
+    "registry_id": {"type": "string", "format": "uuid"},
+    "registry_version": {"type": "integer", "minimum": 1},
+    "rubrics": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/compiled_rubric"}
+    },
+    "registry_digest": {"$ref": "#/$defs/blake3_digest"}
+  },
+  "$defs": {
+    "stage": {"enum": ["S1", "S2", "S3", "S4", "S5", "E2E"]},
+    "blake3_digest": {
+      "type": "string",
+      "pattern": "^blake3:[0-9a-f]{64}$"
+    },
+    "compiled_rubric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema", "rubric_id", "version", "domain", "stage", "title",
+        "description", "items", "total_weight", "hard_gate_item_ids",
+        "rubric_digest"
+      ],
+      "properties": {
+        "schema": {"const": "eva.compiled-rubric.v1"},
+        "rubric_id": {"type": "string", "format": "uuid"},
+        "version": {"type": "integer", "minimum": 1},
+        "domain": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$"
+        },
+        "stage": {"$ref": "#/$defs/stage"},
+        "title": {"type": "string", "minLength": 1},
+        "description": {"type": "string", "minLength": 1},
+        "items": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 10,
+          "items": {"$ref": "#/$defs/compiled_item"}
+        },
+        "total_weight": {"type": "integer", "minimum": 5},
+        "hard_gate_item_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "format": "uuid"}
+        },
+        "rubric_digest": {"$ref": "#/$defs/blake3_digest"}
+      }
+    },
+    "compiled_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema", "ordinal", "item_id", "title", "description", "atomic",
+        "observable", "weight", "normalized_weight_bps", "evidence_selectors",
+        "partial_credit", "provenance", "labels", "item_digest"
+      ],
+      "properties": {
+        "schema": {"const": "eva.compiled-rubric-item.v1"},
+        "ordinal": {"type": "integer", "minimum": 0, "maximum": 9},
+        "item_id": {"type": "string", "format": "uuid"},
+        "title": {"type": "string", "minLength": 1},
+        "description": {"type": "string", "minLength": 1},
+        "atomic": {"const": true},
+        "observable": {"const": true},
+        "weight": {"type": "integer", "minimum": 1},
+        "normalized_weight_bps": {"type": "integer", "minimum": 0, "maximum": 10000},
+        "evidence_selectors": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/compiled_selector"}
+        },
+        "partial_credit": {"type": "object"},
+        "hard_gate": {"type": "object"},
+        "provenance": {"type": "object"},
+        "labels": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "item_digest": {"$ref": "#/$defs/blake3_digest"}
+      }
+    },
+    "compiled_selector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema", "ordinal", "selector_id", "source", "kind", "query",
+        "evidence_stage", "required", "aggregation", "selector_digest"
+      ],
+      "properties": {
+        "schema": {"const": "eva.compiled-evidence-selector.v1"},
+        "ordinal": {"type": "integer", "minimum": 0},
+        "selector_id": {"type": "string", "format": "uuid"},
+        "source": {"enum": ["context", "workspace"]},
+        "kind": {
+          "enum": [
+            "json_pointer", "event_type", "text_query", "path", "glob",
+            "file_content", "workspace_diff"
+          ]
+        },
+        "query": {"type": "string", "minLength": 1},
+        "evidence_stage": {"$ref": "#/$defs/stage"},
+        "required": {"type": "boolean"},
+        "aggregation": {"enum": ["any", "all", "count"]},
+        "selector_digest": {"$ref": "#/$defs/blake3_digest"}
+      }
+    }
+  }
+}

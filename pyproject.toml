@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "eva-agent"
+version = "0.1.0"
+description = "Verifiable medical-research sandbox pipeline and EvaMed harness"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "blake3>=1.0,<2",
+  "cryptography>=45,<51",
+  "jsonschema>=4.23,<5",
+  "openai-codex==0.147.0",
+  "openai>=2.52,<3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=9,<10"]
+
+[project.scripts]
+eva-agent = "eva_agent.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-ra"

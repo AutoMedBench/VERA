@@ -1,0 +1,4 @@
+interface:
+  display_name: "Workspace Agent Judge"
+  short_description: "Judge committed context and workspace evidence"
+  default_prompt: "Judge this immutable EvaMed evidence bundle with read-only workspace tools and the bound rubric."

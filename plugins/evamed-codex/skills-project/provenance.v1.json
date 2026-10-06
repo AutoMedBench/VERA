@@ -1,0 +1,65 @@
+{
+  "automatic_production_activation": false,
+  "body_bytes_modified": false,
+  "privacy_filtered_metadata": true,
+  "schema": "eva.project-skill-provenance.v1",
+  "skills": [
+    {
+      "bytes": 540,
+      "content_blake3": "7de8b356658edecd8c9144369013a63f651ed1e189fa6980cf8ab0de0fa89e48",
+      "name": "med-classification",
+      "path": "med-classification/SKILL.md"
+    },
+    {
+      "bytes": 566,
+      "content_blake3": "de82dfc5d59376cff0d0fd0bd1bc9f7394dca938897360cd34a2871100bf8095",
+      "name": "med-data-audit",
+      "path": "med-data-audit/SKILL.md"
+    },
+    {
+      "bytes": 572,
+      "content_blake3": "3f7fe232228b5227ae4ec5d01745605c36b365d549cd8856fe20ab161e6ea7ed",
+      "name": "med-evidence-attribution",
+      "path": "med-evidence-attribution/SKILL.md"
+    },
+    {
+      "bytes": 552,
+      "content_blake3": "13dc6ed999fe71304ef9c087d9b9f0f8effcb55e93c3cefe86f886e58663aa54",
+      "name": "med-image-synthesis",
+      "path": "med-image-synthesis/SKILL.md"
+    },
+    {
+      "bytes": 583,
+      "content_blake3": "cf4b2c5a1d1eac4ba47eae004e85812e44fa563234368f43ca3856476be728ff",
+      "name": "med-localization",
+      "path": "med-localization/SKILL.md"
+    },
+    {
+      "bytes": 548,
+      "content_blake3": "cbd69bc59bb8aec194c0bba95ad480e39d27a618cfeeabf88796cdddd20c23c9",
+      "name": "med-recovery-submit",
+      "path": "med-recovery-submit/SKILL.md"
+    },
+    {
+      "bytes": 546,
+      "content_blake3": "1a0b66c07e283785410a70bd67bbeb1cb781231472cbd722c3e332f8ebdb6953",
+      "name": "med-report",
+      "path": "med-report/SKILL.md"
+    },
+    {
+      "bytes": 569,
+      "content_blake3": "ab2e3ed76dba73f35c5d1956070f1cb2988d796857264f669955983cbed17312",
+      "name": "med-vqa",
+      "path": "med-vqa/SKILL.md"
+    },
+    {
+      "bytes": 632,
+      "content_blake3": "ac9f8ac3873370efcc514165f8e8a2e0b936006b2a152bd6c08108ac5a3ea51e",
+      "name": "medresearch-core",
+      "path": "medresearch-core/SKILL.md"
+    }
+  ],
+  "source_catalog": "evamed-codex/config/harness-profile.json",
+  "source_catalog_blake3": "80fb6ccd9a3cd6f2c95021aed463f3408ef18a65e9e7dee4577078cd993fe808",
+  "source_catalog_version": "evamed-skills-v1.1"
+}

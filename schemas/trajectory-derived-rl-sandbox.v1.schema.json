@@ -1,0 +1,216 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://service.example.invalid/schemas/trajectory-derived-rl-sandbox.v1.schema.json",
+  "title": "EVA-Agent trajectory-derived RL sandbox v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "construction_method", "commitment_method", "sandbox_id",
+    "split", "domain", "stage", "instruction", "benchmark_provenance",
+    "starting_point", "evidence_manifest", "rubric_binding", "rubric_table",
+    "reward_calculation_contract", "construction_policy", "wrapper_blake3"
+  ],
+  "properties": {
+    "schema": {"const": "eva.trajectory-derived-rl-sandbox.v1"},
+    "construction_method": {
+      "const": "trajectory-or-benchmark-stage-start-rubric-evidence-wrap-v1"
+    },
+    "commitment_method": {"const": "blake3-framed-wrapper-root-v1"},
+    "sandbox_id": {"type": "string", "format": "uuid"},
+    "split": {"const": "train"},
+    "domain": {"type": "string", "minLength": 1},
+    "stage": {"$ref": "#/$defs/stage"},
+    "instruction": {"type": "string", "minLength": 1},
+    "benchmark_provenance": {"$ref": "#/$defs/benchmark_provenance"},
+    "starting_point": {"$ref": "#/$defs/starting_point"},
+    "evidence_manifest": {"$ref": "#/$defs/evidence_manifest"},
+    "rubric_binding": {
+      "type": "object",
+      "required": [
+        "schema", "binding_id", "sandbox_id", "domain", "stage", "rubric_id",
+        "rubric_version", "rubric_digest", "registry_id", "registry_version",
+        "registry_digest"
+      ]
+    },
+    "rubric_table": {
+      "type": "object",
+      "required": ["schema", "rubric_id", "domain", "stage", "items", "rubric_digest"],
+      "properties": {
+        "schema": {"const": "eva.compiled-rubric.v1"},
+        "rubric_id": {"type": "string", "format": "uuid"},
+        "domain": {"type": "string"},
+        "stage": {"$ref": "#/$defs/stage"},
+        "items": {"type": "array", "minItems": 5, "maxItems": 10},
+        "rubric_digest": {"$ref": "#/$defs/tagged_blake3"}
+      }
+    },
+    "reward_calculation_contract": {"$ref": "#/$defs/reward_contract"},
+    "construction_policy": {"$ref": "#/$defs/construction_policy"},
+    "wrapper_blake3": {"$ref": "#/$defs/blake3"}
+  },
+  "$defs": {
+    "stage": {"enum": ["S1", "S2", "S3", "S4", "S5", "E2E"]},
+    "blake3": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "tagged_blake3": {"type": "string", "pattern": "^blake3:[0-9a-f]{64}$"},
+    "safe_path": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\).+$"
+    },
+    "benchmark_provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["benchmark", "source_file", "source_revision", "source_record_id"],
+      "properties": {
+        "benchmark": {"type": "string", "minLength": 1},
+        "source_file": {"$ref": "#/$defs/safe_path"},
+        "source_revision": {"type": "string", "minLength": 1},
+        "source_record_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "file_row": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "byte_count"],
+      "properties": {
+        "path": {"$ref": "#/$defs/safe_path"},
+        "byte_count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "commitment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "root_field", "namespace"],
+      "properties": {
+        "method": {"const": "blake3-framed-wrapper-root-v1"},
+        "root_field": {"const": "wrapper_blake3"},
+        "namespace": {"enum": ["workspace_initial", "evidence"]}
+      }
+    },
+    "workspace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "files", "file_count", "byte_count", "commitment"],
+      "properties": {
+        "schema": {"const": "eva.reopenable-workspace-state.v1"},
+        "files": {"type": "array", "items": {"$ref": "#/$defs/file_row"}},
+        "file_count": {"type": "integer", "minimum": 0},
+        "byte_count": {"type": "integer", "minimum": 0},
+        "commitment": {"$ref": "#/$defs/commitment"}
+      }
+    },
+    "evidence_manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "artifacts", "artifact_count", "byte_count", "commitment"],
+      "properties": {
+        "schema": {"const": "eva.rl-sandbox-evidence-manifest.v1"},
+        "artifacts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/file_row"}
+        },
+        "artifact_count": {"type": "integer", "minimum": 1},
+        "byte_count": {"type": "integer", "minimum": 0},
+        "commitment": {"$ref": "#/$defs/commitment"}
+      }
+    },
+    "trajectory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trajectory_id", "trajectory_blake3", "run_id", "run_receipt_blake3",
+        "step_id", "event_ordinal", "event_count", "producer_model_id",
+        "verification_status"
+      ],
+      "properties": {
+        "trajectory_id": {"type": "string", "format": "uuid"},
+        "trajectory_blake3": {"$ref": "#/$defs/blake3"},
+        "run_id": {"type": "string", "format": "uuid"},
+        "run_receipt_blake3": {"$ref": "#/$defs/blake3"},
+        "step_id": {"type": "string", "format": "uuid"},
+        "event_ordinal": {"type": "integer", "minimum": 0},
+        "event_count": {"type": "integer", "minimum": 1},
+        "producer_model_id": {"type": "string", "minLength": 1},
+        "verification_status": {"const": "independently_reopenable"}
+      }
+    },
+    "excluded_run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trajectory_id", "run_id", "run_receipt_blake3", "disposition"],
+      "properties": {
+        "trajectory_id": {"type": "string", "format": "uuid"},
+        "run_id": {"type": "string", "format": "uuid"},
+        "run_receipt_blake3": {"$ref": "#/$defs/blake3"},
+        "disposition": {"const": "excluded_from_training_evidence"}
+      }
+    },
+    "fallback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reason", "excluded_run"],
+      "properties": {
+        "reason": {
+          "enum": [
+            "benchmark_source_selected", "launcher_defect", "trajectory_unverifiable",
+            "trajectory_state_missing"
+          ]
+        },
+        "excluded_run": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/excluded_run"}]}
+      }
+    },
+    "starting_point": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["origin", "position", "trajectory", "fallback", "workspace_initial_state"],
+      "properties": {
+        "origin": {"enum": ["trajectory_step", "benchmark_source"]},
+        "position": {"enum": ["before_step", "benchmark_initial"]},
+        "trajectory": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/trajectory"}]},
+        "fallback": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/fallback"}]},
+        "workspace_initial_state": {"$ref": "#/$defs/workspace"}
+      }
+    },
+    "reward_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema", "method", "registry_digest", "rubric_id", "rubric_digest",
+        "parameters_from", "item_score_domain", "weighted_score",
+        "hard_gate_behavior", "score_receipt_schema"
+      ],
+      "properties": {
+        "schema": {"const": "eva.rubric-reward-calculation-contract.v1"},
+        "method": {"const": "compiled-rubric-score-v1"},
+        "registry_digest": {"$ref": "#/$defs/tagged_blake3"},
+        "rubric_id": {"type": "string", "format": "uuid"},
+        "rubric_digest": {"$ref": "#/$defs/tagged_blake3"},
+        "parameters_from": {"const": "rubric_table.items"},
+        "item_score_domain": {"const": "exact_compiled_partial_credit_levels_bps"},
+        "weighted_score": {"const": "nearest_integer_basis_points_using_compiled_weights"},
+        "hard_gate_behavior": {"const": "reward_bps_zero_when_any_compiled_hard_gate_fails"},
+        "score_receipt_schema": {"const": "eva.rubric-score.v1"}
+      }
+    },
+    "construction_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required_proofs", "explicitly_not_required", "quality_selection_deferred",
+        "admission_claimed"
+      ],
+      "properties": {
+        "required_proofs": {"type": "array", "minItems": 6, "uniqueItems": true},
+        "explicitly_not_required": {
+          "const": [
+            "source_rollout_success", "cascade_completion", "ability_separation",
+            "agent_judge_assessment", "minimum_reward"
+          ]
+        },
+        "quality_selection_deferred": {"const": true},
+        "admission_claimed": {"const": false}
+      }
+    }
+  }
+}

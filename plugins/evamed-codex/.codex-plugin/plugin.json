@@ -1,0 +1,25 @@
+{
+  "name": "evamed-codex",
+  "version": "0.1.0",
+  "description": "Codex-native skills and an offline-verifiable MCP bridge for the EVA medical-research data pipeline.",
+  "author": {
+    "name": "EVA-Agent contributors"
+  },
+  "license": "Apache-2.0",
+  "keywords": ["medical-research", "sandbox", "agent-judge", "sft", "mcp"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "EvaMed Codex",
+    "shortDescription": "Build and verify medical-research agent data.",
+    "longDescription": "Construct rubric-bound sandboxes, run one weak/middle/strong trajectory, judge committed workspace evidence, and slice only signed admitted trajectories.",
+    "developerName": "EVA-Agent contributors",
+    "category": "Developer Tools",
+    "capabilities": ["Skills", "MCP", "Local verification"],
+    "defaultPrompt": [
+      "Construct a verifiable medical-research sandbox.",
+      "Run and judge one stage-wise ability-separation rollout.",
+      "Verify and slice an admitted trajectory for SFT."
+    ]
+  },
+  "mcpServers": "./.mcp.json"
+}

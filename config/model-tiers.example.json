@@ -1,0 +1,48 @@
+{
+  "schema": "eva.provider-model-routing.v1",
+  "protocol": "openai-compatible-chat-completions",
+  "providers": {
+    "shared-gateway": {
+      "max_concurrency": 256,
+      "requests_per_minute": 12000,
+      "burst": 256,
+      "queue_timeout_seconds": 300
+    }
+  },
+  "cohorts": {
+    "weak": {
+      "provider": "shared-gateway",
+      "model_env": "MODEL_DEEPSEEK_V4_FLASH",
+      "registry_role": "cascade_deepseek_v4_flash"
+    },
+    "middle": {
+      "provider": "shared-gateway",
+      "model_env": "MODEL_GEMINI_3_1_PRO"
+    },
+    "strong": {
+      "provider": "shared-gateway",
+      "model_env": "MODEL_GPT_5_6_SOL",
+      "registry_role": "cascade_gpt_5_6_sol"
+    }
+  },
+  "judge": {
+    "provider": "shared-gateway",
+    "model_env": "MODEL_OPUS_5",
+    "registry_role": "architect_opus_5"
+  },
+  "auxiliary": {
+    "critic-opus-4-8": {
+      "provider": "shared-gateway",
+      "model_env": "MODEL_OPUS_4_8",
+      "registry_role": "critic_opus_4_8"
+    },
+    "deepseek-v4-pro": {
+      "provider": "shared-gateway",
+      "model_env": "MODEL_DEEPSEEK_V4_PRO"
+    },
+    "qwen": {
+      "provider": "shared-gateway",
+      "registry_provider_family": "qwen"
+    }
+  }
+}

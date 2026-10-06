@@ -1,0 +1,932 @@
+{
+  "catalogs": 8,
+  "files": [
+    {
+      "blake3": "766cfb747617133ce3ca214fd798133e118987cf3aba68ebe82d1f16779abbe0",
+      "bytes": 2343,
+      "path": "README.md"
+    },
+    {
+      "blake3": "733a75e25a56258702a2ee1419f81c9a7213c937eacea12e8b43eafb49652af3",
+      "bytes": 8056,
+      "path": "harnesses/H000/catalog.json"
+    },
+    {
+      "blake3": "c3dc68b40b8304da06eb885e7d120f918e53099c0600a789f903163c117bff05",
+      "bytes": 919,
+      "path": "harnesses/H000/skills/artifact-verification-med/SKILL.md"
+    },
+    {
+      "blake3": "898aa62e91984920078968872dca5cdcc25b90989e77b34323ed399366111502",
+      "bytes": 664,
+      "path": "harnesses/H000/skills/clinical-data-pipeline-mini/SKILL.md"
+    },
+    {
+      "blake3": "8c812f277bd4dba4a180917ed96da2684eeff5d18d278334fa711ed28869225f",
+      "bytes": 657,
+      "path": "harnesses/H000/skills/clinical-dialogue-mini/SKILL.md"
+    },
+    {
+      "blake3": "dea71019c92d97d8e796a6b7fe7593bc5d07f4d541d97b79c4dc95816b49d69b",
+      "bytes": 623,
+      "path": "harnesses/H000/skills/ehr-longitudinal-mini/SKILL.md"
+    },
+    {
+      "blake3": "c25c172960755b5e8de0d87a7dab55c2e02d60daca3f3fed94a2f13541bd4812",
+      "bytes": 1023,
+      "path": "harnesses/H000/skills/evidence-summary-med/SKILL.md"
+    },
+    {
+      "blake3": "a77b1df494d87dd10021a61a5994f174de68959b6338789557abd9c8fe4809c5",
+      "bytes": 1554,
+      "path": "harnesses/H000/skills/expert-consultation-mini/SKILL.md"
+    },
+    {
+      "blake3": "255be170c452750e73a261e053307ff4b6292f89a1d1a2c562d36c86d3f15abd",
+      "bytes": 711,
+      "path": "harnesses/H000/skills/fhir-interop-mini/SKILL.md"
+    },
+    {
+      "blake3": "36b7085c8a5419f872bcda887f219574c69d275eb9c6bc76ad861066cc033150",
+      "bytes": 1179,
+      "path": "harnesses/H000/skills/interactive-clinical-protocol-med/SKILL.md"
+    },
+    {
+      "blake3": "4f126e90bf407c145933ae863a02067a5ce6fb1a66d672b10fbd75e421e7117e",
+      "bytes": 1688,
+      "path": "harnesses/H000/skills/long-horizon-execution-med/SKILL.md"
+    },
+    {
+      "blake3": "e4b05f495fee4b9d8d73cd1408812f2fab1230b37af55ea4892c65d7b096ba70",
+      "bytes": 618,
+      "path": "harnesses/H000/skills/medical-s2-evidence-mini/SKILL.md"
+    },
+    {
+      "blake3": "a19e3d374c8702ae38b9095494f2074ece6a7e80a5e04b3211528f606aeb8db8",
+      "bytes": 609,
+      "path": "harnesses/H000/skills/medical-s3-judgment-mini/SKILL.md"
+    },
+    {
+      "blake3": "754c176ef57eff4ec2278ee786d1b5a760ce8723098381eabe3120b87fbc44ee",
+      "bytes": 583,
+      "path": "harnesses/H000/skills/medical-s4-integration-mini/SKILL.md"
+    },
+    {
+      "blake3": "640f6929a9086828c3f6696f5d5503988ad88f23df6e9f248dee0b5436b25571",
+      "bytes": 639,
+      "path": "harnesses/H000/skills/medical-s5-delivery-mini/SKILL.md"
+    },
+    {
+      "blake3": "94f5fa622f44f5353b28132a44f41f881122f5d9fce34ca8daa73b5e1e2e82b5",
+      "bytes": 744,
+      "path": "harnesses/H000/skills/medical-visual-mini/SKILL.md"
+    },
+    {
+      "blake3": "7125916a9ca774178f2c3e35ef491f4e480fd500ec62aadc79aab6e4d2c1932c",
+      "bytes": 649,
+      "path": "harnesses/H000/skills/medication-safety-mini/SKILL.md"
+    },
+    {
+      "blake3": "7c9134317a06b8058e7e61c0b303bca3687b7c88f228f198a29c3b366ed04ec7",
+      "bytes": 685,
+      "path": "harnesses/H000/skills/pathology-volume-mini/SKILL.md"
+    },
+    {
+      "blake3": "f13b1d0e5845a3fc45b66935152eeeb726c372b3e69faa6895c802ab60ce078c",
+      "bytes": 666,
+      "path": "harnesses/H000/skills/research-governance-mini/SKILL.md"
+    },
+    {
+      "blake3": "063ffc3ad48e6af5ed95a899ec1019e867e1d859f576684300e9cd64afc02491",
+      "bytes": 651,
+      "path": "harnesses/H000/skills/research-protocol-mini/SKILL.md"
+    },
+    {
+      "blake3": "b6a75680022df0b8e67107f473fd96caf7d907158d12dc7d9b83c12ffd36a66b",
+      "bytes": 609,
+      "path": "harnesses/H000/skills/structured-delivery-mini/SKILL.md"
+    },
+    {
+      "blake3": "54825b759253ca9aefbb0f94142f1d18446f352fdf7b4d8b93db8766bcce7f81",
+      "bytes": 727,
+      "path": "harnesses/H000/skills/tool-routing-mini/SKILL.md"
+    },
+    {
+      "blake3": "0f8111ca4f7a505173b1c6c1cf123af85299cdae85ba83abdff9e46e90cad05a",
+      "bytes": 568,
+      "path": "harnesses/H000/skills/trial-matching-mini/SKILL.md"
+    },
+    {
+      "blake3": "733a75e25a56258702a2ee1419f81c9a7213c937eacea12e8b43eafb49652af3",
+      "bytes": 8056,
+      "path": "harnesses/H001/catalog.json"
+    },
+    {
+      "blake3": "c3dc68b40b8304da06eb885e7d120f918e53099c0600a789f903163c117bff05",
+      "bytes": 919,
+      "path": "harnesses/H001/skills/artifact-verification-med/SKILL.md"
+    },
+    {
+      "blake3": "898aa62e91984920078968872dca5cdcc25b90989e77b34323ed399366111502",
+      "bytes": 664,
+      "path": "harnesses/H001/skills/clinical-data-pipeline-mini/SKILL.md"
+    },
+    {
+      "blake3": "8c812f277bd4dba4a180917ed96da2684eeff5d18d278334fa711ed28869225f",
+      "bytes": 657,
+      "path": "harnesses/H001/skills/clinical-dialogue-mini/SKILL.md"
+    },
+    {
+      "blake3": "dea71019c92d97d8e796a6b7fe7593bc5d07f4d541d97b79c4dc95816b49d69b",
+      "bytes": 623,
+      "path": "harnesses/H001/skills/ehr-longitudinal-mini/SKILL.md"
+    },
+    {
+      "blake3": "c25c172960755b5e8de0d87a7dab55c2e02d60daca3f3fed94a2f13541bd4812",
+      "bytes": 1023,
+      "path": "harnesses/H001/skills/evidence-summary-med/SKILL.md"
+    },
+    {
+      "blake3": "a77b1df494d87dd10021a61a5994f174de68959b6338789557abd9c8fe4809c5",
+      "bytes": 1554,
+      "path": "harnesses/H001/skills/expert-consultation-mini/SKILL.md"
+    },
+    {
+      "blake3": "255be170c452750e73a261e053307ff4b6292f89a1d1a2c562d36c86d3f15abd",
+      "bytes": 711,
+      "path": "harnesses/H001/skills/fhir-interop-mini/SKILL.md"
+    },
+    {
+      "blake3": "36b7085c8a5419f872bcda887f219574c69d275eb9c6bc76ad861066cc033150",
+      "bytes": 1179,
+      "path": "harnesses/H001/skills/interactive-clinical-protocol-med/SKILL.md"
+    },
+    {
+      "blake3": "4f126e90bf407c145933ae863a02067a5ce6fb1a66d672b10fbd75e421e7117e",
+      "bytes": 1688,
+      "path": "harnesses/H001/skills/long-horizon-execution-med/SKILL.md"
+    },
+    {
+      "blake3": "e4b05f495fee4b9d8d73cd1408812f2fab1230b37af55ea4892c65d7b096ba70",
+      "bytes": 618,
+      "path": "harnesses/H001/skills/medical-s2-evidence-mini/SKILL.md"
+    },
+    {
+      "blake3": "a19e3d374c8702ae38b9095494f2074ece6a7e80a5e04b3211528f606aeb8db8",
+      "bytes": 609,
+      "path": "harnesses/H001/skills/medical-s3-judgment-mini/SKILL.md"
+    },
+    {
+      "blake3": "754c176ef57eff4ec2278ee786d1b5a760ce8723098381eabe3120b87fbc44ee",
+      "bytes": 583,
+      "path": "harnesses/H001/skills/medical-s4-integration-mini/SKILL.md"
+    },
+    {
+      "blake3": "640f6929a9086828c3f6696f5d5503988ad88f23df6e9f248dee0b5436b25571",
+      "bytes": 639,
+      "path": "harnesses/H001/skills/medical-s5-delivery-mini/SKILL.md"
+    },
+    {
+      "blake3": "94f5fa622f44f5353b28132a44f41f881122f5d9fce34ca8daa73b5e1e2e82b5",
+      "bytes": 744,
+      "path": "harnesses/H001/skills/medical-visual-mini/SKILL.md"
+    },
+    {
+      "blake3": "7125916a9ca774178f2c3e35ef491f4e480fd500ec62aadc79aab6e4d2c1932c",
+      "bytes": 649,
+      "path": "harnesses/H001/skills/medication-safety-mini/SKILL.md"
+    },
+    {
+      "blake3": "7c9134317a06b8058e7e61c0b303bca3687b7c88f228f198a29c3b366ed04ec7",
+      "bytes": 685,
+      "path": "harnesses/H001/skills/pathology-volume-mini/SKILL.md"
+    },
+    {
+      "blake3": "f13b1d0e5845a3fc45b66935152eeeb726c372b3e69faa6895c802ab60ce078c",
+      "bytes": 666,
+      "path": "harnesses/H001/skills/research-governance-mini/SKILL.md"
+    },
+    {
+      "blake3": "063ffc3ad48e6af5ed95a899ec1019e867e1d859f576684300e9cd64afc02491",
+      "bytes": 651,
+      "path": "harnesses/H001/skills/research-protocol-mini/SKILL.md"
+    },
+    {
+      "blake3": "b6a75680022df0b8e67107f473fd96caf7d907158d12dc7d9b83c12ffd36a66b",
+      "bytes": 609,
+      "path": "harnesses/H001/skills/structured-delivery-mini/SKILL.md"
+    },
+    {
+      "blake3": "54825b759253ca9aefbb0f94142f1d18446f352fdf7b4d8b93db8766bcce7f81",
+      "bytes": 727,
+      "path": "harnesses/H001/skills/tool-routing-mini/SKILL.md"
+    },
+    {
+      "blake3": "0f8111ca4f7a505173b1c6c1cf123af85299cdae85ba83abdff9e46e90cad05a",
+      "bytes": 568,
+      "path": "harnesses/H001/skills/trial-matching-mini/SKILL.md"
+    },
+    {
+      "blake3": "733a75e25a56258702a2ee1419f81c9a7213c937eacea12e8b43eafb49652af3",
+      "bytes": 8056,
+      "path": "harnesses/H002/catalog.json"
+    },
+    {
+      "blake3": "c3dc68b40b8304da06eb885e7d120f918e53099c0600a789f903163c117bff05",
+      "bytes": 919,
+      "path": "harnesses/H002/skills/artifact-verification-med/SKILL.md"
+    },
+    {
+      "blake3": "898aa62e91984920078968872dca5cdcc25b90989e77b34323ed399366111502",
+      "bytes": 664,
+      "path": "harnesses/H002/skills/clinical-data-pipeline-mini/SKILL.md"
+    },
+    {
+      "blake3": "8c812f277bd4dba4a180917ed96da2684eeff5d18d278334fa711ed28869225f",
+      "bytes": 657,
+      "path": "harnesses/H002/skills/clinical-dialogue-mini/SKILL.md"
+    },
+    {
+      "blake3": "dea71019c92d97d8e796a6b7fe7593bc5d07f4d541d97b79c4dc95816b49d69b",
+      "bytes": 623,
+      "path": "harnesses/H002/skills/ehr-longitudinal-mini/SKILL.md"
+    },
+    {
+      "blake3": "c25c172960755b5e8de0d87a7dab55c2e02d60daca3f3fed94a2f13541bd4812",
+      "bytes": 1023,
+      "path": "harnesses/H002/skills/evidence-summary-med/SKILL.md"
+    },
+    {
+      "blake3": "a77b1df494d87dd10021a61a5994f174de68959b6338789557abd9c8fe4809c5",
+      "bytes": 1554,
+      "path": "harnesses/H002/skills/expert-consultation-mini/SKILL.md"
+    },
+    {
+      "blake3": "255be170c452750e73a261e053307ff4b6292f89a1d1a2c562d36c86d3f15abd",
+      "bytes": 711,
+      "path": "harnesses/H002/skills/fhir-interop-mini/SKILL.md"
+    },
+    {
+      "blake3": "36b7085c8a5419f872bcda887f219574c69d275eb9c6bc76ad861066cc033150",
+      "bytes": 1179,
+      "path": "harnesses/H002/skills/interactive-clinical-protocol-med/SKILL.md"
+    },
+    {
+      "blake3": "4f126e90bf407c145933ae863a02067a5ce6fb1a66d672b10fbd75e421e7117e",
+      "bytes": 1688,
+      "path": "harnesses/H002/skills/long-horizon-execution-med/SKILL.md"
+    },
+    {
+      "blake3": "e4b05f495fee4b9d8d73cd1408812f2fab1230b37af55ea4892c65d7b096ba70",
+      "bytes": 618,
+      "path": "harnesses/H002/skills/medical-s2-evidence-mini/SKILL.md"
+    },
+    {
+      "blake3": "a19e3d374c8702ae38b9095494f2074ece6a7e80a5e04b3211528f606aeb8db8",
+      "bytes": 609,
+      "path": "harnesses/H002/skills/medical-s3-judgment-mini/SKILL.md"
+    },
+    {
+      "blake3": "754c176ef57eff4ec2278ee786d1b5a760ce8723098381eabe3120b87fbc44ee",
+      "bytes": 583,
+      "path": "harnesses/H002/skills/medical-s4-integration-mini/SKILL.md"
+    },
+    {
+      "blake3": "640f6929a9086828c3f6696f5d5503988ad88f23df6e9f248dee0b5436b25571",
+      "bytes": 639,
+      "path": "harnesses/H002/skills/medical-s5-delivery-mini/SKILL.md"
+    },
+    {
+      "blake3": "94f5fa622f44f5353b28132a44f41f881122f5d9fce34ca8daa73b5e1e2e82b5",
+      "bytes": 744,
+      "path": "harnesses/H002/skills/medical-visual-mini/SKILL.md"
+    },
+    {
+      "blake3": "7125916a9ca774178f2c3e35ef491f4e480fd500ec62aadc79aab6e4d2c1932c",
+      "bytes": 649,
+      "path": "harnesses/H002/skills/medication-safety-mini/SKILL.md"
+    },
+    {
+      "blake3": "7c9134317a06b8058e7e61c0b303bca3687b7c88f228f198a29c3b366ed04ec7",
+      "bytes": 685,
+      "path": "harnesses/H002/skills/pathology-volume-mini/SKILL.md"
+    },
+    {
+      "blake3": "f13b1d0e5845a3fc45b66935152eeeb726c372b3e69faa6895c802ab60ce078c",
+      "bytes": 666,
+      "path": "harnesses/H002/skills/research-governance-mini/SKILL.md"
+    },
+    {
+      "blake3": "063ffc3ad48e6af5ed95a899ec1019e867e1d859f576684300e9cd64afc02491",
+      "bytes": 651,
+      "path": "harnesses/H002/skills/research-protocol-mini/SKILL.md"
+    },
+    {
+      "blake3": "b6a75680022df0b8e67107f473fd96caf7d907158d12dc7d9b83c12ffd36a66b",
+      "bytes": 609,
+      "path": "harnesses/H002/skills/structured-delivery-mini/SKILL.md"
+    },
+    {
+      "blake3": "54825b759253ca9aefbb0f94142f1d18446f352fdf7b4d8b93db8766bcce7f81",
+      "bytes": 727,
+      "path": "harnesses/H002/skills/tool-routing-mini/SKILL.md"
+    },
+    {
+      "blake3": "0f8111ca4f7a505173b1c6c1cf123af85299cdae85ba83abdff9e46e90cad05a",
+      "bytes": 568,
+      "path": "harnesses/H002/skills/trial-matching-mini/SKILL.md"
+    },
+    {
+      "blake3": "733a75e25a56258702a2ee1419f81c9a7213c937eacea12e8b43eafb49652af3",
+      "bytes": 8056,
+      "path": "harnesses/H003/catalog.json"
+    },
+    {
+      "blake3": "c3dc68b40b8304da06eb885e7d120f918e53099c0600a789f903163c117bff05",
+      "bytes": 919,
+      "path": "harnesses/H003/skills/artifact-verification-med/SKILL.md"
+    },
+    {
+      "blake3": "898aa62e91984920078968872dca5cdcc25b90989e77b34323ed399366111502",
+      "bytes": 664,
+      "path": "harnesses/H003/skills/clinical-data-pipeline-mini/SKILL.md"
+    },
+    {
+      "blake3": "8c812f277bd4dba4a180917ed96da2684eeff5d18d278334fa711ed28869225f",
+      "bytes": 657,
+      "path": "harnesses/H003/skills/clinical-dialogue-mini/SKILL.md"
+    },
+    {
+      "blake3": "dea71019c92d97d8e796a6b7fe7593bc5d07f4d541d97b79c4dc95816b49d69b",
+      "bytes": 623,
+      "path": "harnesses/H003/skills/ehr-longitudinal-mini/SKILL.md"
+    },
+    {
+      "blake3": "c25c172960755b5e8de0d87a7dab55c2e02d60daca3f3fed94a2f13541bd4812",
+      "bytes": 1023,
+      "path": "harnesses/H003/skills/evidence-summary-med/SKILL.md"
+    },
+    {
+      "blake3": "a77b1df494d87dd10021a61a5994f174de68959b6338789557abd9c8fe4809c5",
+      "bytes": 1554,
+      "path": "harnesses/H003/skills/expert-consultation-mini/SKILL.md"
+    },
+    {
+      "blake3": "255be170c452750e73a261e053307ff4b6292f89a1d1a2c562d36c86d3f15abd",
+      "bytes": 711,
+      "path": "harnesses/H003/skills/fhir-interop-mini/SKILL.md"
+    },
+    {
+      "blake3": "36b7085c8a5419f872bcda887f219574c69d275eb9c6bc76ad861066cc033150",
+      "bytes": 1179,
+      "path": "harnesses/H003/skills/interactive-clinical-protocol-med/SKILL.md"
+    },
+    {
+      "blake3": "4f126e90bf407c145933ae863a02067a5ce6fb1a66d672b10fbd75e421e7117e",
+      "bytes": 1688,
+      "path": "harnesses/H003/skills/long-horizon-execution-med/SKILL.md"
+    },
+    {
+      "blake3": "e4b05f495fee4b9d8d73cd1408812f2fab1230b37af55ea4892c65d7b096ba70",
+      "bytes": 618,
+      "path": "harnesses/H003/skills/medical-s2-evidence-mini/SKILL.md"
+    },
+    {
+      "blake3": "a19e3d374c8702ae38b9095494f2074ece6a7e80a5e04b3211528f606aeb8db8",
+      "bytes": 609,
+      "path": "harnesses/H003/skills/medical-s3-judgment-mini/SKILL.md"
+    },
+    {
+      "blake3": "754c176ef57eff4ec2278ee786d1b5a760ce8723098381eabe3120b87fbc44ee",
+      "bytes": 583,
+      "path": "harnesses/H003/skills/medical-s4-integration-mini/SKILL.md"
+    },
+    {
+      "blake3": "640f6929a9086828c3f6696f5d5503988ad88f23df6e9f248dee0b5436b25571",
+      "bytes": 639,
+      "path": "harnesses/H003/skills/medical-s5-delivery-mini/SKILL.md"
+    },
+    {
+      "blake3": "94f5fa622f44f5353b28132a44f41f881122f5d9fce34ca8daa73b5e1e2e82b5",
+      "bytes": 744,
+      "path": "harnesses/H003/skills/medical-visual-mini/SKILL.md"
+    },
+    {
+      "blake3": "7125916a9ca774178f2c3e35ef491f4e480fd500ec62aadc79aab6e4d2c1932c",
+      "bytes": 649,
+      "path": "harnesses/H003/skills/medication-safety-mini/SKILL.md"
+    },
+    {
+      "blake3": "7c9134317a06b8058e7e61c0b303bca3687b7c88f228f198a29c3b366ed04ec7",
+      "bytes": 685,
+      "path": "harnesses/H003/skills/pathology-volume-mini/SKILL.md"
+    },
+    {
+      "blake3": "f13b1d0e5845a3fc45b66935152eeeb726c372b3e69faa6895c802ab60ce078c",
+      "bytes": 666,
+      "path": "harnesses/H003/skills/research-governance-mini/SKILL.md"
+    },
+    {
+      "blake3": "063ffc3ad48e6af5ed95a899ec1019e867e1d859f576684300e9cd64afc02491",
+      "bytes": 651,
+      "path": "harnesses/H003/skills/research-protocol-mini/SKILL.md"
+    },
+    {
+      "blake3": "b6a75680022df0b8e67107f473fd96caf7d907158d12dc7d9b83c12ffd36a66b",
+      "bytes": 609,
+      "path": "harnesses/H003/skills/structured-delivery-mini/SKILL.md"
+    },
+    {
+      "blake3": "54825b759253ca9aefbb0f94142f1d18446f352fdf7b4d8b93db8766bcce7f81",
+      "bytes": 727,
+      "path": "harnesses/H003/skills/tool-routing-mini/SKILL.md"
+    },
+    {
+      "blake3": "0f8111ca4f7a505173b1c6c1cf123af85299cdae85ba83abdff9e46e90cad05a",
+      "bytes": 568,
+      "path": "harnesses/H003/skills/trial-matching-mini/SKILL.md"
+    },
+    {
+      "blake3": "733a75e25a56258702a2ee1419f81c9a7213c937eacea12e8b43eafb49652af3",
+      "bytes": 8056,
+      "path": "harnesses/H004/catalog.json"
+    },
+    {
+      "blake3": "c3dc68b40b8304da06eb885e7d120f918e53099c0600a789f903163c117bff05",
+      "bytes": 919,
+      "path": "harnesses/H004/skills/artifact-verification-med/SKILL.md"
+    },
+    {
+      "blake3": "898aa62e91984920078968872dca5cdcc25b90989e77b34323ed399366111502",
+      "bytes": 664,
+      "path": "harnesses/H004/skills/clinical-data-pipeline-mini/SKILL.md"
+    },
+    {
+      "blake3": "8c812f277bd4dba4a180917ed96da2684eeff5d18d278334fa711ed28869225f",
+      "bytes": 657,
+      "path": "harnesses/H004/skills/clinical-dialogue-mini/SKILL.md"
+    },
+    {
+      "blake3": "dea71019c92d97d8e796a6b7fe7593bc5d07f4d541d97b79c4dc95816b49d69b",
+      "bytes": 623,
+      "path": "harnesses/H004/skills/ehr-longitudinal-mini/SKILL.md"
+    },
+    {
+      "blake3": "c25c172960755b5e8de0d87a7dab55c2e02d60daca3f3fed94a2f13541bd4812",
+      "bytes": 1023,
+      "path": "harnesses/H004/skills/evidence-summary-med/SKILL.md"
+    },
+    {
+      "blake3": "a77b1df494d87dd10021a61a5994f174de68959b6338789557abd9c8fe4809c5",
+      "bytes": 1554,
+      "path": "harnesses/H004/skills/expert-consultation-mini/SKILL.md"
+    },
+    {
+      "blake3": "255be170c452750e73a261e053307ff4b6292f89a1d1a2c562d36c86d3f15abd",
+      "bytes": 711,
+      "path": "harnesses/H004/skills/fhir-interop-mini/SKILL.md"
+    },
+    {
+      "blake3": "36b7085c8a5419f872bcda887f219574c69d275eb9c6bc76ad861066cc033150",
+      "bytes": 1179,
+      "path": "harnesses/H004/skills/interactive-clinical-protocol-med/SKILL.md"
+    },
+    {
+      "blake3": "4f126e90bf407c145933ae863a02067a5ce6fb1a66d672b10fbd75e421e7117e",
+      "bytes": 1688,
+      "path": "harnesses/H004/skills/long-horizon-execution-med/SKILL.md"
+    },
+    {
+      "blake3": "e4b05f495fee4b9d8d73cd1408812f2fab1230b37af55ea4892c65d7b096ba70",
+      "bytes": 618,
+      "path": "harnesses/H004/skills/medical-s2-evidence-mini/SKILL.md"
+    },
+    {
+      "blake3": "a19e3d374c8702ae38b9095494f2074ece6a7e80a5e04b3211528f606aeb8db8",
+      "bytes": 609,
+      "path": "harnesses/H004/skills/medical-s3-judgment-mini/SKILL.md"
+    },
+    {
+      "blake3": "754c176ef57eff4ec2278ee786d1b5a760ce8723098381eabe3120b87fbc44ee",
+      "bytes": 583,
+      "path": "harnesses/H004/skills/medical-s4-integration-mini/SKILL.md"
+    },
+    {
+      "blake3": "640f6929a9086828c3f6696f5d5503988ad88f23df6e9f248dee0b5436b25571",
+      "bytes": 639,
+      "path": "harnesses/H004/skills/medical-s5-delivery-mini/SKILL.md"
+    },
+    {
+      "blake3": "94f5fa622f44f5353b28132a44f41f881122f5d9fce34ca8daa73b5e1e2e82b5",
+      "bytes": 744,
+      "path": "harnesses/H004/skills/medical-visual-mini/SKILL.md"
+    },
+    {
+      "blake3": "7125916a9ca774178f2c3e35ef491f4e480fd500ec62aadc79aab6e4d2c1932c",
+      "bytes": 649,
+      "path": "harnesses/H004/skills/medication-safety-mini/SKILL.md"
+    },
+    {
+      "blake3": "7c9134317a06b8058e7e61c0b303bca3687b7c88f228f198a29c3b366ed04ec7",
+      "bytes": 685,
+      "path": "harnesses/H004/skills/pathology-volume-mini/SKILL.md"
+    },
+    {
+      "blake3": "f13b1d0e5845a3fc45b66935152eeeb726c372b3e69faa6895c802ab60ce078c",
+      "bytes": 666,
+      "path": "harnesses/H004/skills/research-governance-mini/SKILL.md"
+    },
+    {
+      "blake3": "063ffc3ad48e6af5ed95a899ec1019e867e1d859f576684300e9cd64afc02491",
+      "bytes": 651,
+      "path": "harnesses/H004/skills/research-protocol-mini/SKILL.md"
+    },
+    {
+      "blake3": "b6a75680022df0b8e67107f473fd96caf7d907158d12dc7d9b83c12ffd36a66b",
+      "bytes": 609,
+      "path": "harnesses/H004/skills/structured-delivery-mini/SKILL.md"
+    },
+    {
+      "blake3": "54825b759253ca9aefbb0f94142f1d18446f352fdf7b4d8b93db8766bcce7f81",
+      "bytes": 727,
+      "path": "harnesses/H004/skills/tool-routing-mini/SKILL.md"
+    },
+    {
+      "blake3": "0f8111ca4f7a505173b1c6c1cf123af85299cdae85ba83abdff9e46e90cad05a",
+      "bytes": 568,
+      "path": "harnesses/H004/skills/trial-matching-mini/SKILL.md"
+    },
+    {
+      "blake3": "a8c407363c63ca11db7d20b2a4eb76ce9a377538285348176620515a2f17f833",
+      "bytes": 8468,
+      "path": "harnesses/H005/catalog.json"
+    },
+    {
+      "blake3": "5c1a1a02473ebf964cff5d6ba30884415861d9a85e0bd9c272f0b9a138ae4849",
+      "bytes": 1743,
+      "path": "harnesses/H005/skills/agentic-environment-execution-med/SKILL.md"
+    },
+    {
+      "blake3": "c3dc68b40b8304da06eb885e7d120f918e53099c0600a789f903163c117bff05",
+      "bytes": 919,
+      "path": "harnesses/H005/skills/artifact-verification-med/SKILL.md"
+    },
+    {
+      "blake3": "898aa62e91984920078968872dca5cdcc25b90989e77b34323ed399366111502",
+      "bytes": 664,
+      "path": "harnesses/H005/skills/clinical-data-pipeline-mini/SKILL.md"
+    },
+    {
+      "blake3": "8c812f277bd4dba4a180917ed96da2684eeff5d18d278334fa711ed28869225f",
+      "bytes": 657,
+      "path": "harnesses/H005/skills/clinical-dialogue-mini/SKILL.md"
+    },
+    {
+      "blake3": "dea71019c92d97d8e796a6b7fe7593bc5d07f4d541d97b79c4dc95816b49d69b",
+      "bytes": 623,
+      "path": "harnesses/H005/skills/ehr-longitudinal-mini/SKILL.md"
+    },
+    {
+      "blake3": "c25c172960755b5e8de0d87a7dab55c2e02d60daca3f3fed94a2f13541bd4812",
+      "bytes": 1023,
+      "path": "harnesses/H005/skills/evidence-summary-med/SKILL.md"
+    },
+    {
+      "blake3": "a77b1df494d87dd10021a61a5994f174de68959b6338789557abd9c8fe4809c5",
+      "bytes": 1554,
+      "path": "harnesses/H005/skills/expert-consultation-mini/SKILL.md"
+    },
+    {
+      "blake3": "255be170c452750e73a261e053307ff4b6292f89a1d1a2c562d36c86d3f15abd",
+      "bytes": 711,
+      "path": "harnesses/H005/skills/fhir-interop-mini/SKILL.md"
+    },
+    {
+      "blake3": "36b7085c8a5419f872bcda887f219574c69d275eb9c6bc76ad861066cc033150",
+      "bytes": 1179,
+      "path": "harnesses/H005/skills/interactive-clinical-protocol-med/SKILL.md"
+    },
+    {
+      "blake3": "4f126e90bf407c145933ae863a02067a5ce6fb1a66d672b10fbd75e421e7117e",
+      "bytes": 1688,
+      "path": "harnesses/H005/skills/long-horizon-execution-med/SKILL.md"
+    },
+    {
+      "blake3": "e4b05f495fee4b9d8d73cd1408812f2fab1230b37af55ea4892c65d7b096ba70",
+      "bytes": 618,
+      "path": "harnesses/H005/skills/medical-s2-evidence-mini/SKILL.md"
+    },
+    {
+      "blake3": "a19e3d374c8702ae38b9095494f2074ece6a7e80a5e04b3211528f606aeb8db8",
+      "bytes": 609,
+      "path": "harnesses/H005/skills/medical-s3-judgment-mini/SKILL.md"
+    },
+    {
+      "blake3": "754c176ef57eff4ec2278ee786d1b5a760ce8723098381eabe3120b87fbc44ee",
+      "bytes": 583,
+      "path": "harnesses/H005/skills/medical-s4-integration-mini/SKILL.md"
+    },
+    {
+      "blake3": "640f6929a9086828c3f6696f5d5503988ad88f23df6e9f248dee0b5436b25571",
+      "bytes": 639,
+      "path": "harnesses/H005/skills/medical-s5-delivery-mini/SKILL.md"
+    },
+    {
+      "blake3": "94f5fa622f44f5353b28132a44f41f881122f5d9fce34ca8daa73b5e1e2e82b5",
+      "bytes": 744,
+      "path": "harnesses/H005/skills/medical-visual-mini/SKILL.md"
+    },
+    {
+      "blake3": "7125916a9ca774178f2c3e35ef491f4e480fd500ec62aadc79aab6e4d2c1932c",
+      "bytes": 649,
+      "path": "harnesses/H005/skills/medication-safety-mini/SKILL.md"
+    },
+    {
+      "blake3": "7c9134317a06b8058e7e61c0b303bca3687b7c88f228f198a29c3b366ed04ec7",
+      "bytes": 685,
+      "path": "harnesses/H005/skills/pathology-volume-mini/SKILL.md"
+    },
+    {
+      "blake3": "f13b1d0e5845a3fc45b66935152eeeb726c372b3e69faa6895c802ab60ce078c",
+      "bytes": 666,
+      "path": "harnesses/H005/skills/research-governance-mini/SKILL.md"
+    },
+    {
+      "blake3": "063ffc3ad48e6af5ed95a899ec1019e867e1d859f576684300e9cd64afc02491",
+      "bytes": 651,
+      "path": "harnesses/H005/skills/research-protocol-mini/SKILL.md"
+    },
+    {
+      "blake3": "b6a75680022df0b8e67107f473fd96caf7d907158d12dc7d9b83c12ffd36a66b",
+      "bytes": 609,
+      "path": "harnesses/H005/skills/structured-delivery-mini/SKILL.md"
+    },
+    {
+      "blake3": "54825b759253ca9aefbb0f94142f1d18446f352fdf7b4d8b93db8766bcce7f81",
+      "bytes": 727,
+      "path": "harnesses/H005/skills/tool-routing-mini/SKILL.md"
+    },
+    {
+      "blake3": "0f8111ca4f7a505173b1c6c1cf123af85299cdae85ba83abdff9e46e90cad05a",
+      "bytes": 568,
+      "path": "harnesses/H005/skills/trial-matching-mini/SKILL.md"
+    },
+    {
+      "blake3": "209d288f85049b3dcbc8b0cac18c4446e995747aa02153a7739baa8cda5eed97",
+      "bytes": 8806,
+      "path": "harnesses/H006/catalog.json"
+    },
+    {
+      "blake3": "5c1a1a02473ebf964cff5d6ba30884415861d9a85e0bd9c272f0b9a138ae4849",
+      "bytes": 1743,
+      "path": "harnesses/H006/skills/agentic-environment-execution-med/SKILL.md"
+    },
+    {
+      "blake3": "c3dc68b40b8304da06eb885e7d120f918e53099c0600a789f903163c117bff05",
+      "bytes": 919,
+      "path": "harnesses/H006/skills/artifact-verification-med/SKILL.md"
+    },
+    {
+      "blake3": "c555f5eb0f72f1c244c422f34bbc01cb63604f0d6eb6c4a21b86d3c03c3e14ad",
+      "bytes": 2161,
+      "path": "harnesses/H006/skills/bounded-plan-readiness-med/SKILL.md"
+    },
+    {
+      "blake3": "898aa62e91984920078968872dca5cdcc25b90989e77b34323ed399366111502",
+      "bytes": 664,
+      "path": "harnesses/H006/skills/clinical-data-pipeline-mini/SKILL.md"
+    },
+    {
+      "blake3": "8c812f277bd4dba4a180917ed96da2684eeff5d18d278334fa711ed28869225f",
+      "bytes": 657,
+      "path": "harnesses/H006/skills/clinical-dialogue-mini/SKILL.md"
+    },
+    {
+      "blake3": "dea71019c92d97d8e796a6b7fe7593bc5d07f4d541d97b79c4dc95816b49d69b",
+      "bytes": 623,
+      "path": "harnesses/H006/skills/ehr-longitudinal-mini/SKILL.md"
+    },
+    {
+      "blake3": "c25c172960755b5e8de0d87a7dab55c2e02d60daca3f3fed94a2f13541bd4812",
+      "bytes": 1023,
+      "path": "harnesses/H006/skills/evidence-summary-med/SKILL.md"
+    },
+    {
+      "blake3": "a77b1df494d87dd10021a61a5994f174de68959b6338789557abd9c8fe4809c5",
+      "bytes": 1554,
+      "path": "harnesses/H006/skills/expert-consultation-mini/SKILL.md"
+    },
+    {
+      "blake3": "255be170c452750e73a261e053307ff4b6292f89a1d1a2c562d36c86d3f15abd",
+      "bytes": 711,
+      "path": "harnesses/H006/skills/fhir-interop-mini/SKILL.md"
+    },
+    {
+      "blake3": "36b7085c8a5419f872bcda887f219574c69d275eb9c6bc76ad861066cc033150",
+      "bytes": 1179,
+      "path": "harnesses/H006/skills/interactive-clinical-protocol-med/SKILL.md"
+    },
+    {
+      "blake3": "4f126e90bf407c145933ae863a02067a5ce6fb1a66d672b10fbd75e421e7117e",
+      "bytes": 1688,
+      "path": "harnesses/H006/skills/long-horizon-execution-med/SKILL.md"
+    },
+    {
+      "blake3": "e4b05f495fee4b9d8d73cd1408812f2fab1230b37af55ea4892c65d7b096ba70",
+      "bytes": 618,
+      "path": "harnesses/H006/skills/medical-s2-evidence-mini/SKILL.md"
+    },
+    {
+      "blake3": "a19e3d374c8702ae38b9095494f2074ece6a7e80a5e04b3211528f606aeb8db8",
+      "bytes": 609,
+      "path": "harnesses/H006/skills/medical-s3-judgment-mini/SKILL.md"
+    },
+    {
+      "blake3": "754c176ef57eff4ec2278ee786d1b5a760ce8723098381eabe3120b87fbc44ee",
+      "bytes": 583,
+      "path": "harnesses/H006/skills/medical-s4-integration-mini/SKILL.md"
+    },
+    {
+      "blake3": "640f6929a9086828c3f6696f5d5503988ad88f23df6e9f248dee0b5436b25571",
+      "bytes": 639,
+      "path": "harnesses/H006/skills/medical-s5-delivery-mini/SKILL.md"
+    },
+    {
+      "blake3": "94f5fa622f44f5353b28132a44f41f881122f5d9fce34ca8daa73b5e1e2e82b5",
+      "bytes": 744,
+      "path": "harnesses/H006/skills/medical-visual-mini/SKILL.md"
+    },
+    {
+      "blake3": "7125916a9ca774178f2c3e35ef491f4e480fd500ec62aadc79aab6e4d2c1932c",
+      "bytes": 649,
+      "path": "harnesses/H006/skills/medication-safety-mini/SKILL.md"
+    },
+    {
+      "blake3": "7c9134317a06b8058e7e61c0b303bca3687b7c88f228f198a29c3b366ed04ec7",
+      "bytes": 685,
+      "path": "harnesses/H006/skills/pathology-volume-mini/SKILL.md"
+    },
+    {
+      "blake3": "f13b1d0e5845a3fc45b66935152eeeb726c372b3e69faa6895c802ab60ce078c",
+      "bytes": 666,
+      "path": "harnesses/H006/skills/research-governance-mini/SKILL.md"
+    },
+    {
+      "blake3": "063ffc3ad48e6af5ed95a899ec1019e867e1d859f576684300e9cd64afc02491",
+      "bytes": 651,
+      "path": "harnesses/H006/skills/research-protocol-mini/SKILL.md"
+    },
+    {
+      "blake3": "b6a75680022df0b8e67107f473fd96caf7d907158d12dc7d9b83c12ffd36a66b",
+      "bytes": 609,
+      "path": "harnesses/H006/skills/structured-delivery-mini/SKILL.md"
+    },
+    {
+      "blake3": "54825b759253ca9aefbb0f94142f1d18446f352fdf7b4d8b93db8766bcce7f81",
+      "bytes": 727,
+      "path": "harnesses/H006/skills/tool-routing-mini/SKILL.md"
+    },
+    {
+      "blake3": "0f8111ca4f7a505173b1c6c1cf123af85299cdae85ba83abdff9e46e90cad05a",
+      "bytes": 568,
+      "path": "harnesses/H006/skills/trial-matching-mini/SKILL.md"
+    },
+    {
+      "blake3": "2f51333cc6dd1bc4eed639f3ab455f05b869642be1f2466341eee7b2dec677f4",
+      "bytes": 9335,
+      "path": "harnesses/H007/catalog.json"
+    },
+    {
+      "blake3": "5c1a1a02473ebf964cff5d6ba30884415861d9a85e0bd9c272f0b9a138ae4849",
+      "bytes": 1743,
+      "path": "harnesses/H007/skills/agentic-environment-execution-med/SKILL.md"
+    },
+    {
+      "blake3": "c3dc68b40b8304da06eb885e7d120f918e53099c0600a789f903163c117bff05",
+      "bytes": 919,
+      "path": "harnesses/H007/skills/artifact-verification-med/SKILL.md"
+    },
+    {
+      "blake3": "c555f5eb0f72f1c244c422f34bbc01cb63604f0d6eb6c4a21b86d3c03c3e14ad",
+      "bytes": 2161,
+      "path": "harnesses/H007/skills/bounded-plan-readiness-med/SKILL.md"
+    },
+    {
+      "blake3": "898aa62e91984920078968872dca5cdcc25b90989e77b34323ed399366111502",
+      "bytes": 664,
+      "path": "harnesses/H007/skills/clinical-data-pipeline-mini/SKILL.md"
+    },
+    {
+      "blake3": "8c812f277bd4dba4a180917ed96da2684eeff5d18d278334fa711ed28869225f",
+      "bytes": 657,
+      "path": "harnesses/H007/skills/clinical-dialogue-mini/SKILL.md"
+    },
+    {
+      "blake3": "dea71019c92d97d8e796a6b7fe7593bc5d07f4d541d97b79c4dc95816b49d69b",
+      "bytes": 623,
+      "path": "harnesses/H007/skills/ehr-longitudinal-mini/SKILL.md"
+    },
+    {
+      "blake3": "c25c172960755b5e8de0d87a7dab55c2e02d60daca3f3fed94a2f13541bd4812",
+      "bytes": 1023,
+      "path": "harnesses/H007/skills/evidence-summary-med/SKILL.md"
+    },
+    {
+      "blake3": "a77b1df494d87dd10021a61a5994f174de68959b6338789557abd9c8fe4809c5",
+      "bytes": 1554,
+      "path": "harnesses/H007/skills/expert-consultation-mini/SKILL.md"
+    },
+    {
+      "blake3": "255be170c452750e73a261e053307ff4b6292f89a1d1a2c562d36c86d3f15abd",
+      "bytes": 711,
+      "path": "harnesses/H007/skills/fhir-interop-mini/SKILL.md"
+    },
+    {
+      "blake3": "36b7085c8a5419f872bcda887f219574c69d275eb9c6bc76ad861066cc033150",
+      "bytes": 1179,
+      "path": "harnesses/H007/skills/interactive-clinical-protocol-med/SKILL.md"
+    },
+    {
+      "blake3": "4f126e90bf407c145933ae863a02067a5ce6fb1a66d672b10fbd75e421e7117e",
+      "bytes": 1688,
+      "path": "harnesses/H007/skills/long-horizon-execution-med/SKILL.md"
+    },
+    {
+      "blake3": "e4b05f495fee4b9d8d73cd1408812f2fab1230b37af55ea4892c65d7b096ba70",
+      "bytes": 618,
+      "path": "harnesses/H007/skills/medical-s2-evidence-mini/SKILL.md"
+    },
+    {
+      "blake3": "a19e3d374c8702ae38b9095494f2074ece6a7e80a5e04b3211528f606aeb8db8",
+      "bytes": 609,
+      "path": "harnesses/H007/skills/medical-s3-judgment-mini/SKILL.md"
+    },
+    {
+      "blake3": "754c176ef57eff4ec2278ee786d1b5a760ce8723098381eabe3120b87fbc44ee",
+      "bytes": 583,
+      "path": "harnesses/H007/skills/medical-s4-integration-mini/SKILL.md"
+    },
+    {
+      "blake3": "640f6929a9086828c3f6696f5d5503988ad88f23df6e9f248dee0b5436b25571",
+      "bytes": 639,
+      "path": "harnesses/H007/skills/medical-s5-delivery-mini/SKILL.md"
+    },
+    {
+      "blake3": "94f5fa622f44f5353b28132a44f41f881122f5d9fce34ca8daa73b5e1e2e82b5",
+      "bytes": 744,
+      "path": "harnesses/H007/skills/medical-visual-mini/SKILL.md"
+    },
+    {
+      "blake3": "7125916a9ca774178f2c3e35ef491f4e480fd500ec62aadc79aab6e4d2c1932c",
+      "bytes": 649,
+      "path": "harnesses/H007/skills/medication-safety-mini/SKILL.md"
+    },
+    {
+      "blake3": "7c9134317a06b8058e7e61c0b303bca3687b7c88f228f198a29c3b366ed04ec7",
+      "bytes": 685,
+      "path": "harnesses/H007/skills/pathology-volume-mini/SKILL.md"
+    },
+    {
+      "blake3": "83410b0cf2334f4ed8973b671de4acae125e41e9a77d67fee40974cc1486b82f",
+      "bytes": 2172,
+      "path": "harnesses/H007/skills/pilot-recovery-validation-med/SKILL.md"
+    },
+    {
+      "blake3": "f13b1d0e5845a3fc45b66935152eeeb726c372b3e69faa6895c802ab60ce078c",
+      "bytes": 666,
+      "path": "harnesses/H007/skills/research-governance-mini/SKILL.md"
+    },
+    {
+      "blake3": "063ffc3ad48e6af5ed95a899ec1019e867e1d859f576684300e9cd64afc02491",
+      "bytes": 651,
+      "path": "harnesses/H007/skills/research-protocol-mini/SKILL.md"
+    },
+    {
+      "blake3": "b6a75680022df0b8e67107f473fd96caf7d907158d12dc7d9b83c12ffd36a66b",
+      "bytes": 609,
+      "path": "harnesses/H007/skills/structured-delivery-mini/SKILL.md"
+    },
+    {
+      "blake3": "54825b759253ca9aefbb0f94142f1d18446f352fdf7b4d8b93db8766bcce7f81",
+      "bytes": 727,
+      "path": "harnesses/H007/skills/tool-routing-mini/SKILL.md"
+    },
+    {
+      "blake3": "0f8111ca4f7a505173b1c6c1cf123af85299cdae85ba83abdff9e46e90cad05a",
+      "bytes": 568,
+      "path": "harnesses/H007/skills/trial-matching-mini/SKILL.md"
+    }
+  ],
+  "historical_manifest_redistribution_marker_preserved": "external-only-license-unresolved",
+  "license_terms_file_present_in_retained_source": false,
+  "occurrences": 174,
+  "privacy_filtered_metadata": true,
+  "relicensing_claimed": false,
+  "repository": "operator/rlevo-Med-RL-data",
+  "revision": "79dd2a31f5f3e5018608bf20f982ad70d2e5dafa",
+  "root": "rlevo-Med-RL-data/rev-79dd2a31f5f",
+  "schema": "eva.vendored-legacy-skill-provenance.v1",
+  "source_license_marker": "other",
+  "source_manifest_blake3": "1d981263023cff2b0d1817081247cc4f511c65c79e399be3d4e443d6d610bc64",
+  "unique_skill_contents": 24
+}

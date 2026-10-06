@@ -1,0 +1,4 @@
+interface:
+  display_name: "Stage Rollout"
+  short_description: "Run one three-cohort EvaMed evaluation"
+  default_prompt: "Run this S1-S5 or E2E sandbox once per ability cohort with bounded parallel tools and no retry."

@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://service.example.invalid/schemas/legacy-teacher-sft-slice.v1.schema.json",
+  "title": "EVA legacy teacher SFT slice v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "dataset_id",
+    "example_id",
+    "sandbox_id",
+    "rollout_id",
+    "model_id",
+    "stage",
+    "prefix",
+    "supervised_assistant_decision",
+    "target_tool_observations",
+    "atomic_multi_tool_target",
+    "rubric_reward",
+    "provenance",
+    "hidden_reasoning_included",
+    "private_reference_included",
+    "slice_blake3"
+  ],
+  "properties": {
+    "schema": {"const": "eva.legacy-teacher-sft-slice.v1"},
+    "dataset_id": {"type": "string", "format": "uuid"},
+    "example_id": {"type": "string", "format": "uuid"},
+    "sandbox_id": {"type": "string", "minLength": 1},
+    "rollout_id": {"type": "string", "minLength": 1},
+    "model_id": {"type": "string", "minLength": 1},
+    "stage": {"enum": ["S1", "S2", "S3", "S4", "S5", "E2E"]},
+    "prefix": {"type": "array", "minItems": 2, "items": {"type": "object"}},
+    "supervised_assistant_decision": {"type": "object"},
+    "target_tool_observations": {"type": "array", "items": {"type": "object"}},
+    "atomic_multi_tool_target": {"type": "boolean"},
+    "rubric_reward": {"type": "object"},
+    "provenance": {"type": "object"},
+    "hidden_reasoning_included": {"const": false},
+    "private_reference_included": {"const": false},
+    "slice_blake3": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

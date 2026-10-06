@@ -1,0 +1,17 @@
+{
+  "schema": "vera.source-export.v1",
+  "version": "0.1.0",
+  "branch": "vera-coevolve",
+  "privacy_filtered": true,
+  "source_only": true,
+  "fresh_git_history": true,
+  "training_or_evaluation_results_included": false,
+  "credentials_included": false,
+  "installed_unique_skills": 38,
+  "harness_profiles": [
+    "v1.1",
+    "v1.2",
+    "v1.3-supra"
+  ],
+  "original_internal_module_names_retained": true
+}
