@@ -1,11 +1,12 @@
 # VERA: Scaling Verifiable Environments for Agentic co-Evolution
 
 [![GitHub](https://img.shields.io/badge/GitHub-AutoMedBench%2FVERA-181717?logo=github&logoColor=white)](https://github.com/AutoMedBench/VERA)
-[![Paper](https://img.shields.io/badge/Paper-Tech%20Report-76B900?logo=arxiv&logoColor=white)](#)
+[![Paper](https://img.shields.io/badge/arXiv-2610.05923-76B900?logo=arxiv&logoColor=white)](https://arxiv.org/abs/2610.05923)
+[![Blog](https://img.shields.io/badge/Blog-automedbench.github.io%2Fvera-76B900)](https://automedbench.github.io/vera/)
 [![Model](https://img.shields.io/badge/Model-Opening_Soon-76B900)](#)
 [![Data](https://img.shields.io/badge/Data-Opening_Soon-76B900)](#)
 
-<!-- TODO: fill in the Paper, Model, and Data links on release. -->
+<!-- TODO: fill in the Model and Data links on release. -->
 
 **VERA** (*Verifiable Environments for Agentic co-Evolution*) builds verifiable
 environments at scale and lets agents evolve on them. An agent writes rubrics
@@ -134,19 +135,19 @@ logs are shipped. This repository is research software, not a clinical device.
 
 ## Blog
 
-- [VERA: Scaling Verifiable Environments for Agentic co-Evolution](docs/blog/) — method and results with the paper's figures and tables, plus the RSI cost analysis and report-driven co-evolution examples.
+- [VERA: Scaling Verifiable Environments for Agentic co-Evolution](https://automedbench.github.io/vera/) ([source](docs/blog/)) — method and results with the paper's figures and tables, plus the RSI cost analysis and report-driven co-evolution examples.
 
 ## Citation
 
 ```bibtex
-@article{liu2026vera,
+@misc{liu2026verascalingverifiableenvironments,
   title={VERA: Scaling Verifiable Environments for Agentic co-Evolution},
-  author={Liu, Junqi and Pan, Yongyang and Jiang, Zhuosong and Li, Dongbai and
-           Zhang, Bo and Ling, Xitong and Liu, Tianyu and Ye, Hanrong and
-           He, Yufan and Zhao, Can and Guo, Pengfei and Yang, Dong and
-           Myronenko, Andriy and Zhou, Yuyin and Xu, Daguang and Tang, Yucheng},
+  author={Junqi Liu and Yongyang Pan and Zhuosong Jiang and Dongbai Li and Bo Zhang and Xitong Ling and Sheng Wang and Hanrong Ye and Yufan He and Can Zhao and Pengfei Guo and Dong Yang and Andriy Myronenko and Yuyin Zhou and Tianyu Liu and Daguang Xu and Yucheng Tang},
   year={2026},
-  journal={Technical report}
+  eprint={2610.05923},
+  archivePrefix={arXiv},
+  primaryClass={cs.AI},
+  url={https://arxiv.org/abs/2610.05923},
 }
 ```
 
