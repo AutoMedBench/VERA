@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://service.example.invalid/schemas/legacy-teacher-sft-dataset.v1.schema.json",
+  "title": "EVA legacy teacher SFT dataset v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "dataset_id",
+    "source_root_label",
+    "selection",
+    "inventory",
+    "source_count",
+    "slice_count",
+    "shard_count",
+    "counts_by_stage",
+    "sources",
+    "shards",
+    "rl_start_candidates",
+    "private_reference_included",
+    "hidden_reasoning_included",
+    "manifest_blake3"
+  ],
+  "properties": {
+    "schema": {"const": "eva.legacy-teacher-sft-dataset.v1"},
+    "dataset_id": {"type": "string", "format": "uuid"},
+    "source_root_label": {"type": "string", "minLength": 1},
+    "selection": {"type": "object"},
+    "inventory": {"type": "object"},
+    "source_count": {"type": "integer", "minimum": 1},
+    "slice_count": {"type": "integer", "minimum": 1},
+    "shard_count": {"type": "integer", "minimum": 1},
+    "counts_by_stage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["S1", "S2", "S3", "S4", "S5", "E2E"],
+      "properties": {
+        "S1": {"type": "integer", "minimum": 0},
+        "S2": {"type": "integer", "minimum": 0},
+        "S3": {"type": "integer", "minimum": 0},
+        "S4": {"type": "integer", "minimum": 0},
+        "S5": {"type": "integer", "minimum": 0},
+        "E2E": {"type": "integer", "minimum": 0}
+      }
+    },
+    "sources": {"type": "array", "minItems": 1, "items": {"type": "object"}},
+    "shards": {"type": "array", "minItems": 1, "items": {"type": "object"}},
+    "rl_start_candidates": {"type": "array", "items": {"type": "object"}},
+    "private_reference_included": {"const": false},
+    "hidden_reasoning_included": {"const": false},
+    "manifest_blake3": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

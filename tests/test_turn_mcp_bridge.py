@@ -1,0 +1,1222 @@
+from __future__ import annotations
+
+import asyncio
+from dataclasses import dataclass
+import json
+import os
+from pathlib import Path
+import socket
+import stat
+import subprocess
+import sys
+import tempfile
+from threading import Barrier, Lock
+import time
+from typing import Any, AsyncIterator, Mapping, Sequence
+
+import pytest
+
+from eva_agent.codex_pipeline import (
+    CodexOpus5AgentJudge,
+    CodexPipelineError,
+    CodexRolloutAdapter,
+    CodexToolExecutionBridge,
+    DEFAULT_ACTOR_SYSTEM_INSTRUCTION,
+    TurnMCPBridgeFactory,
+    TurnMCPError,
+)
+from eva_agent.codex_runtime import (
+    BackendInputItem,
+    BackendTurnOptions,
+    CodexRole,
+    CodexRuntime,
+    CodexSandbox,
+    CodexThreadOptions,
+    CodexToolOffer,
+)
+from eva_agent.pipeline import (
+    BenchmarkEpisode,
+    BenchmarkSource,
+    Cohort,
+    DeterministicUUIDFactory,
+    EvidenceBundle,
+    FilesystemSandbox,
+    JudgeRequest,
+    ModelTarget,
+    ParallelToolRuntime,
+    RolloutRequest,
+    SandboxManifest,
+    Stage,
+    ToolDefinition,
+    ToolRegistry,
+    ToolTrace,
+    TrajectoryEvent,
+)
+from eva_agent.pipeline.digests import blake3_bytes, blake3_hex, canonical_value
+from eva_agent.pipeline.runner import evidence_core
+from eva_agent.rubrics import load_and_compile_registry
+
+
+ROOT = Path(__file__).resolve().parents[1]
+PROXY = ROOT / "src/eva_agent/codex_pipeline/turn_mcp_proxy.py"
+
+
+@dataclass
+class _Notification:
+    method: str
+    payload: Mapping[str, Any]
+
+
+class _Turn:
+    def __init__(self, turn_id: str, events: Sequence[_Notification]) -> None:
+        self.id = turn_id
+        self._events = tuple(events)
+
+    async def stream(self) -> AsyncIterator[_Notification]:
+        for event in self._events:
+            await asyncio.sleep(0)
+            yield event
+
+
+def _event(method: str, thread: str, turn_id: str, **extra: Any) -> _Notification:
+    return _Notification(method, {"threadId": thread, "turnId": turn_id, **extra})
+
+
+def _read_json_line(stream: Any) -> Mapping[str, Any]:
+    line = stream.readline()
+    if not line:
+        raise AssertionError("turn MCP proxy ended before a JSON-RPC response")
+    value = json.loads(line)
+    assert isinstance(value, dict)
+    return value
+
+
+def _exercise_proxy(
+    options: CodexThreadOptions,
+    groups: tuple[tuple[tuple[str, Mapping[str, Any]], ...], ...],
+) -> tuple[tuple[Mapping[str, Any], ...], tuple[Mapping[str, Any], ...]]:
+    config = canonical_value(options.config)
+    assert isinstance(config, dict)
+    servers = config["mcp_servers"]
+    assert isinstance(servers, dict) and len(servers) == 1
+    server = next(iter(servers.values()))
+    assert isinstance(server, dict)
+    names = [offer.name for offer in options.offered_tools]
+    assert server["enabled_tools"] == names
+    assert server["omit_tools_from"] == ["deferred", "code_mode"]
+    assert server["supports_parallel_tool_calls"] is True
+    assert server["tools"] == {
+        name: {"approval_mode": "approve"} for name in names
+    }
+    assert "default_tools_approval_mode" not in server
+    environment = os.environ.copy()
+    environment.update(server["env"])
+    environment["EVA_MCP_TEST_AMBIENT_SECRET"] = "must-not-cross-exec-boundary"
+    process = subprocess.Popen(
+        [server["command"], *server["args"]],
+        cwd=server["cwd"],
+        env=environment,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        encoding="utf-8",
+    )
+    assert process.stdin is not None and process.stdout is not None
+
+    def send(value: Mapping[str, Any]) -> None:
+        process.stdin.write(json.dumps(value, sort_keys=True) + "\n")
+        process.stdin.flush()
+
+    send(
+        {
+            "jsonrpc": "2.0",
+            "id": "initialize",
+            "method": "initialize",
+            "params": {"protocolVersion": "2025-06-18"},
+        }
+    )
+    initialized = _read_json_line(process.stdout)
+    assert initialized["id"] == "initialize"
+    process_environment = Path(f"/proc/{process.pid}/environ")
+    if process_environment.is_file():
+        names = {
+            entry.split(b"=", 1)[0]
+            for entry in process_environment.read_bytes().split(b"\0")
+            if entry
+        }
+        assert names == {
+            b"EVA_TURN_MCP_SOCKET",
+            b"EVA_TURN_MCP_NONCE",
+            b"EVA_TURN_MCP_MAXIMUM",
+            b"LANG",
+            b"LC_ALL",
+            b"PATH",
+            b"TZ",
+        }
+    send({"jsonrpc": "2.0", "id": "catalog", "method": "tools/list", "params": {}})
+    catalog = _read_json_line(process.stdout)
+    assert catalog["id"] == "catalog"
+    listed = tuple(catalog["result"]["tools"])
+
+    observed_groups: list[tuple[Mapping[str, Any], ...]] = []
+    ordinal = 0
+    for group in groups:
+        expected: dict[str, tuple[str, Mapping[str, Any]]] = {}
+        for name, arguments in group:
+            request_id = f"call-{ordinal}"
+            ordinal += 1
+            expected[request_id] = (name, arguments)
+            # All requests in a group cross stdin before any result is read,
+            # exercising the proxy and broker's actual concurrent frontier.
+            process.stdin.write(
+                json.dumps(
+                    {
+                        "jsonrpc": "2.0",
+                        "id": request_id,
+                        "method": "tools/call",
+                        "params": {"name": name, "arguments": arguments},
+                    },
+                    sort_keys=True,
+                )
+                + "\n"
+            )
+        process.stdin.flush()
+        by_id = {
+            response["id"]: response
+            for response in (_read_json_line(process.stdout) for _ in group)
+        }
+        assert set(by_id) == set(expected)
+        observed_groups.append(tuple(by_id[key]["result"] for key in expected))
+
+    process.stdin.close()
+    return_code = process.wait(timeout=10)
+    error = "" if process.stderr is None else process.stderr.read()
+    assert return_code == 0, error
+    return listed, tuple(observed_groups)
+
+
+class _MCPThread:
+    def __init__(self, thread_id: str, backend: "_MCPBackend", options: CodexThreadOptions) -> None:
+        self.id = thread_id
+        self._backend = backend
+        self._options = options
+
+    async def turn(
+        self, items: Sequence[BackendInputItem], options: BackendTurnOptions
+    ) -> _Turn:
+        del items, options
+        listed, outcomes = await asyncio.to_thread(
+            _exercise_proxy, self._options, self._backend.groups
+        )
+        self._backend.catalogs.append(listed)
+        turn_id = f"turn-{len(self._backend.catalogs)}"
+        events: list[_Notification] = [
+            _event(
+                "turn/started",
+                self.id,
+                turn_id,
+                turn={"id": turn_id, "status": "inProgress"},
+            )
+        ]
+        ordinal = 0
+        for group, results in zip(self._backend.groups, outcomes, strict=True):
+            pending = []
+            for (name, arguments), result in zip(group, results, strict=True):
+                item = {
+                    "id": f"tool-{ordinal}",
+                    "type": "mcpToolCall",
+                    "server": self._backend.server,
+                    "tool": name,
+                    "arguments": arguments,
+                    "status": "inProgress",
+                }
+                ordinal += 1
+                pending.append((item, result))
+                events.append(_event("item/started", self.id, turn_id, item=item))
+            for item, result in reversed(pending):
+                projected_result = (
+                    {key: value for key, value in result.items() if key != "isError"}
+                    if self._backend.strip_mcp_is_error
+                    else result
+                )
+                events.append(
+                    _event(
+                        "item/completed",
+                        self.id,
+                        turn_id,
+                        item={
+                            **item,
+                            "status": self._backend.tool_status,
+                            "result": projected_result,
+                        },
+                    )
+                )
+        events.extend(
+            (
+                _event(
+                    "item/completed",
+                    self.id,
+                    turn_id,
+                    item={
+                        "id": "answer",
+                        "type": "agentMessage",
+                        "phase": "final_answer",
+                        "text": self._backend.final_text,
+                    },
+                ),
+                _event(
+                    "turn/completed",
+                    self.id,
+                    turn_id,
+                    turn={"id": turn_id, "status": self._backend.turn_status},
+                ),
+            )
+        )
+        return _Turn(turn_id, events)
+
+
+class _MCPBackend:
+    sdk_version = "fake-codex-sdk-with-real-mcp"
+    server_version = "fake-codex-app-server"
+
+    def __init__(
+        self,
+        *,
+        server: str,
+        groups: tuple[tuple[tuple[str, Mapping[str, Any]], ...], ...],
+        final_text: str,
+        tool_status: str = "completed",
+        turn_status: str = "completed",
+        strip_mcp_is_error: bool = False,
+    ) -> None:
+        self.server = server
+        self.groups = groups
+        self.final_text = final_text
+        self.tool_status = tool_status
+        self.turn_status = turn_status
+        self.strip_mcp_is_error = strip_mcp_is_error
+        self.catalogs: list[tuple[Mapping[str, Any], ...]] = []
+        self.starts: list[CodexThreadOptions] = []
+        self.open_count = 0
+        self.close_count = 0
+
+    async def open(self) -> None:
+        self.open_count += 1
+
+    async def close(self) -> None:
+        self.close_count += 1
+
+    async def start_thread(self, options: CodexThreadOptions) -> _MCPThread:
+        self.starts.append(options)
+        return _MCPThread(f"thread-{len(self.starts)}", self, options)
+
+    async def resume_thread(self, thread_id: str, options: CodexThreadOptions) -> _MCPThread:
+        raise AssertionError((thread_id, options, "resume is forbidden"))
+
+
+class _RuntimeFactory:
+    def __init__(self, backend: _MCPBackend, seed: str) -> None:
+        self.backend = backend
+        self.seed = seed
+
+    def __call__(self, _bridge: Any = None) -> CodexRuntime:
+        return CodexRuntime(
+            self.backend,
+            id_factory=DeterministicUUIDFactory(self.seed),
+        )
+
+
+def _rubric():
+    return load_and_compile_registry(
+        ROOT / "rubrics/source/domain-stage-tables.v1.json"
+    ).resolve("medxpertqa", "E2E")
+
+
+def _manifest(seed: str) -> SandboxManifest:
+    episode = BenchmarkEpisode(
+        episode_id="turn-mcp-candidate",
+        source=BenchmarkSource("MedXpertQA", "fixture.json", "fixture-v1"),
+        domain="medxpertqa",
+        stage=Stage.E2E,
+        instruction="Inspect the seed and write a result with the offered tools.",
+        policy_context={"question": "fixture"},
+        initial_files={"seed.txt": b"medical evidence\n"},
+    )
+    return SandboxManifest.create(
+        sandbox_id=DeterministicUUIDFactory(seed).new("sandbox"),
+        episode=episode,
+        rubric=_rubric(),
+    )
+
+
+def _empty_trace() -> ToolTrace:
+    core = {
+        "results": (),
+        "declared_call_ids": (),
+        "joined_call_ids": (),
+        "frontier_count": 0,
+        "max_parallelism_observed": 0,
+        "retry_count": 0,
+    }
+    return ToolTrace(**core, trace_blake3=blake3_hex(core))
+
+
+def _trajectory(ids: DeterministicUUIDFactory, role: str, content: Any) -> TrajectoryEvent:
+    core = {
+        "event_id": ids.new("event"),
+        "role": role,
+        "content": content,
+        "tool_call_ids": (),
+    }
+    return TrajectoryEvent(**core, event_blake3=blake3_hex(core))
+
+
+def _evidence(tmp_path: Path) -> EvidenceBundle:
+    ids = DeterministicUUIDFactory("turn-mcp-judge-evidence")
+    workspace = FilesystemSandbox(
+        tmp_path / "judge-snapshot",
+        ids.new("workspace"),
+        {"seed.txt": b"medical evidence\n"},
+    )
+    partial = EvidenceBundle(
+        bundle_id=ids.new("bundle"),
+        rollout_id=ids.new("rollout"),
+        sandbox_manifest=_manifest("turn-mcp-judge-manifest"),
+        model=ModelTarget(Cohort.STRONG, "actor", "fake-provider"),
+        policy_visible_context={"question": "fixture"},
+        context_blake3=blake3_hex({"question": "fixture"}),
+        workspace_before=workspace.snapshot("before"),
+        workspace_after=workspace.snapshot("after"),
+        tool_trace=_empty_trace(),
+        policy_events=(
+            _trajectory(ids, "system", "system"),
+            _trajectory(ids, "user", {"question": "fixture"}),
+            _trajectory(ids, "assistant", "answer"),
+        ),
+        assistant_output="answer",
+        provider_receipt_blake3=blake3_hex("provider"),
+        safe_provider_metadata={"fixture": True},
+        bundle_blake3="",
+    )
+    return EvidenceBundle(
+        **{
+            key: getattr(partial, key)
+            for key in partial.__dataclass_fields__
+            if key != "bundle_blake3"
+        },
+        bundle_blake3=blake3_hex(evidence_core(partial)),
+    )
+
+
+def _transport(tmp_path: Path) -> tuple[TurnMCPBridgeFactory, Path]:
+    del tmp_path
+    # AF_UNIX path names have a small platform bound, so keep this root short
+    # while still asserting complete child lifecycle cleanup below.
+    temp_root = Path(tempfile.mkdtemp(prefix="eva-mcp-test-", dir="/tmp"))
+    return (
+        TurnMCPBridgeFactory(
+            proxy_python=Path(sys.executable).resolve(),
+            proxy_script=PROXY.resolve(),
+            temp_root=temp_root,
+            maximum_parallel_tools=16,
+        ),
+        temp_root,
+    )
+
+
+def test_turn_mcp_launch_metadata_commits_sanitized_exec_boundary(
+    tmp_path: Path,
+) -> None:
+    transport, temp_root = _transport(tmp_path)
+    metadata = dict(transport.public_metadata())
+    digest = metadata.pop("launch_blake3")
+    assert digest == transport.launch_blake3 == blake3_hex(metadata)
+    assert metadata["schema"] == "eva.turn-mcp-bridge-launch.v1"
+    assert metadata["inherited_parent_environment"] is False
+    assert metadata["environment_values_recorded"] is False
+    assert metadata["turn_nonce_recorded"] is False
+    assert tuple(metadata["final_child_environment_names"]) == (
+        "EVA_TURN_MCP_MAXIMUM",
+        "EVA_TURN_MCP_NONCE",
+        "EVA_TURN_MCP_SOCKET",
+        "LANG",
+        "LC_ALL",
+        "PATH",
+        "TZ",
+    )
+    assert metadata["proxy_exec_script_blake3"] == blake3_bytes(
+        PROXY.with_name("turn_mcp_exec.py").read_bytes()
+    )
+    socket_preflight = metadata["unix_socket_preflight"]
+    assert socket_preflight == {
+        "schema": "eva.turn-mcp-unix-socket-preflight.v1",
+        "temp_root": str(temp_root.resolve()),
+        "temp_root_uid": os.getuid(),
+        "temp_root_mode": 0o700,
+        "temp_root_owned_by_process": True,
+        "temp_root_is_symlink": False,
+        "directory_prefix": "eva-turn-mcp-",
+        "random_component_bytes": 8,
+        "socket_filename": "broker.sock",
+        "probed_socket_path_bytes": len(
+            os.fsencode(
+                str(temp_root.resolve() / "eva-turn-mcp-XXXXXXXX" / "broker.sock")
+            )
+        ),
+        "sockaddr_un_path_capacity_bytes": 108,
+        "terminator_bytes": 1,
+        "name_length_source": "tempfile.mkdtemp_probe_removed",
+        "preflight_passed": True,
+    }
+    assert socket_preflight["probed_socket_path_bytes"] < 108
+    temp_root.rmdir()
+
+
+def test_turn_mcp_preflight_rejects_overlong_unix_socket_path() -> None:
+    temp_root = Path(
+        tempfile.mkdtemp(prefix=f"eva-mcp-path-bound-{'x' * 60}", dir="/tmp")
+    )
+    try:
+        expected_bytes = len(
+            os.fsencode(str(temp_root / "eva-turn-mcp-XXXXXXXX" / "broker.sock"))
+        )
+        assert expected_bytes >= 108
+        with pytest.raises(TurnMCPError, match="Unix socket path"):
+            TurnMCPBridgeFactory(
+                proxy_python=Path(sys.executable).resolve(),
+                proxy_script=PROXY.resolve(),
+                temp_root=temp_root,
+            )
+        assert list(temp_root.iterdir()) == []
+    finally:
+        temp_root.rmdir()
+
+
+def test_turn_mcp_preflight_rejects_non_private_root() -> None:
+    temp_root = Path(tempfile.mkdtemp(prefix="eva-mcp-mode-test-", dir="/tmp"))
+    temp_root.chmod(0o755)
+    try:
+        with pytest.raises(TurnMCPError, match="uid-owned mode-0700"):
+            TurnMCPBridgeFactory(
+                proxy_python=Path(sys.executable).resolve(),
+                proxy_script=PROXY.resolve(),
+                temp_root=temp_root,
+            )
+    finally:
+        temp_root.chmod(0o700)
+        temp_root.rmdir()
+
+
+def test_turn_mcp_preflight_rejects_symlink_root(tmp_path: Path) -> None:
+    temp_root = Path(tempfile.mkdtemp(prefix="eva-mcp-link-test-", dir="/tmp"))
+    alias = tmp_path / "mcp-root-link"
+    alias.symlink_to(temp_root, target_is_directory=True)
+    try:
+        with pytest.raises(TurnMCPError, match="uid-owned mode-0700"):
+            TurnMCPBridgeFactory(
+                proxy_python=Path(sys.executable).resolve(),
+                proxy_script=PROXY.resolve(),
+                temp_root=alias.absolute(),
+            )
+    finally:
+        alias.unlink()
+        temp_root.rmdir()
+
+
+def test_actor_real_mcp_process_executes_exact_candidate_registry_once(
+    tmp_path: Path,
+) -> None:
+    schema = {
+        "type": "object",
+        "properties": {"path": {"type": "string"}},
+        "required": ["path"],
+        "additionalProperties": False,
+    }
+    counts = {"inspect_a": 0, "inspect_b": 0, "write_once": 0}
+    lock = Lock()
+    read_barrier = Barrier(2)
+
+    def inspect(name: str):
+        def handler(workspace: FilesystemSandbox, arguments: Mapping[str, Any]):
+            with lock:
+                counts[name] += 1
+            read_barrier.wait(timeout=3)
+            return {"content": workspace.read_bytes(arguments["path"]).decode()}
+
+        return handler
+
+    def write_once(workspace: FilesystemSandbox, arguments: Mapping[str, Any]):
+        with lock:
+            counts["write_once"] += 1
+        workspace.write_bytes(arguments["path"], b"verified\n", create_only=True)
+        return {"written": arguments["path"]}
+
+    registry = ToolRegistry(
+        (
+            ToolDefinition(
+                "inspect_a", "Inspect candidate evidence A.", schema,
+                inspect("inspect_a"), parallel_safe=True, read_only=True,
+            ),
+            ToolDefinition(
+                "inspect_b", "Inspect candidate evidence B.", schema,
+                inspect("inspect_b"), parallel_safe=True, read_only=True,
+            ),
+            ToolDefinition(
+                "write_once", "Write the candidate result once.", schema,
+                write_once, parallel_safe=False, read_only=False,
+            ),
+        )
+    )
+    workspace = FilesystemSandbox(
+        tmp_path / "actor-workspaces",
+        DeterministicUUIDFactory("turn-mcp-actor-workspace").new("workspace"),
+        {"seed.txt": b"medical evidence\n"},
+    )
+    runtime = ParallelToolRuntime(
+        workspace=workspace,
+        registry=registry,
+        id_factory=DeterministicUUIDFactory("turn-mcp-actor-tools"),
+    )
+    manifest = _manifest("turn-mcp-actor-manifest")
+    request = RolloutRequest(
+        rollout_id=DeterministicUUIDFactory("turn-mcp-rollout").new("rollout"),
+        sandbox=manifest,
+        model=ModelTarget(Cohort.STRONG, "strong-model", "fake-provider"),
+        policy_visible_context={"question": "fixture"},
+        available_tools=registry.public_schemas(),
+    )
+    backend = _MCPBackend(
+        server="evamed",
+        groups=(
+            (
+                ("inspect_a", {"path": "seed.txt"}),
+                ("inspect_b", {"path": "seed.txt"}),
+            ),
+            (("write_once", {"path": "result.txt"}),),
+        ),
+        final_text="actor-complete",
+    )
+    transport, temp_root = _transport(tmp_path)
+
+    def options_factory(request, cwd, offers, bridge):
+        del bridge
+        return CodexThreadOptions(
+            role=CodexRole.STRONG_ACTOR,
+            model=request.model.model_id,
+            provider=request.model.provider,
+            cwd=cwd,
+            sandbox=CodexSandbox.READ_ONLY,
+            offered_tools=offers,
+            config={"features": {"multi_tool": True}},
+        )
+
+    adapter = CodexRolloutAdapter(
+        _RuntimeFactory(backend, "turn-mcp-actor-runtime"),
+        options_factory,
+        id_factory=DeterministicUUIDFactory("turn-mcp-actor-adapter"),
+        turn_mcp_factory=transport,
+    )
+    rollout = adapter.run(request, runtime)
+
+    assert rollout.assistant_output == "actor-complete"
+    assert rollout.policy_events[0].content == DEFAULT_ACTOR_SYSTEM_INSTRUCTION
+    assert counts == {"inspect_a": 1, "inspect_b": 1, "write_once": 1}
+    assert workspace.read_bytes("result.txt") == b"verified\n"
+    trace = runtime.trace()
+    assert len(trace.results) == 3
+    assert trace.frontier_count == 2
+    assert trace.max_parallelism_observed == 2
+    assert [row["name"] for row in backend.catalogs[0]] == [
+        "inspect_a", "inspect_b", "write_once"
+    ]
+    assert canonical_value(backend.catalogs[0]) == canonical_value(
+        tuple(offer.mcp_transport_entry() for offer in backend.starts[0].offered_tools)
+    )
+    assert backend.open_count == backend.close_count == 1
+    assert list(temp_root.iterdir()) == []
+    temp_root.rmdir()
+
+
+@pytest.mark.parametrize("material_view", ("historical-v1", "policy-visible-audit-v2"))
+def test_execution_diagnostic_native_transport_and_judge_use_exact_display(tmp_path: Path, material_view: str) -> None:
+    from dataclasses import replace
+    from eva_agent.codex_runtime.contracts import codex_turn_receipt_from_document, verify_codex_turn_receipt
+    from eva_agent.pipeline.execution_diagnostics import DIAGNOSTIC_PREFIX, record_execution_diagnostics
+    from eva_agent.training.agent_judge_worker import _materialize_agent_judge_evidence
+
+    schema = {"type": "object", "properties": {"stage": {"const": "S3"}, "code": {"type": "string"}},
+              "required": ["stage", "code"], "additionalProperties": False}
+    canonical_result = {"exit_code": 1, "gate_passed": False, "failed_check_ids": ["artifact_present"]}
+
+    def handler(workspace, arguments):
+        host = tmp_path / "host-execution"
+        host.mkdir()
+        (host / "host-receipt.json").write_bytes(b"signed-host-fixture")
+        capture = {
+            "stdout": {"text": "not-presented-prefix " + "o" * 4000, "byte_count": 4021, "truncated": False},
+            "stderr": {"text": "e" * 3000 + "\nValueError: missing result.csv", "byte_count": 3030, "truncated": False},
+        }
+        assert record_execution_diagnostics(capture, episode_dir=host, stage="S3", attempt=1)
+        return canonical_result
+
+    registry = ToolRegistry((ToolDefinition("execute_code", "Execute the exact S3 program.", schema, handler),))
+    ids = DeterministicUUIDFactory("diagnostic-native")
+    workspace = FilesystemSandbox(tmp_path / "tasks", ids.new("workspace"), {"seed.txt": b"medical evidence"})
+    runtime = ParallelToolRuntime(workspace=workspace, registry=registry, id_factory=ids)
+    request = RolloutRequest(rollout_id=ids.new("rollout"), sandbox=_manifest("diagnostic-manifest"),
+        model=ModelTarget(Cohort.STRONG, "strong-model", "fake-provider"),
+        policy_visible_context={"question": "fixture"}, available_tools=registry.public_schemas())
+    backend = _MCPBackend(server="evamed", groups=((("execute_code", {"stage": "S3", "code": "raise ValueError()"}),),), final_text="observed execution error")
+    transport, temp_root = _transport(tmp_path)
+
+    def options_factory(request, cwd, offers, bridge):
+        return CodexThreadOptions(role=CodexRole.STRONG_ACTOR, model=request.model.model_id,
+            provider=request.model.provider, cwd=cwd, sandbox=CodexSandbox.READ_ONLY, offered_tools=offers)
+
+    adapter = CodexRolloutAdapter(_RuntimeFactory(backend, "diagnostic-runtime"), options_factory,
+        id_factory=ids, turn_mcp_factory=transport)
+    rollout = adapter.run(request, runtime)
+    receipt = codex_turn_receipt_from_document(rollout.safe_metadata["codex_turn_receipt"])
+    verify_codex_turn_receipt(receipt)
+    call = receipt.tool_calls[0]
+    native = canonical_value(call.output)["result"]
+    presented = native["content"]
+    assert len(presented) == 1
+    assert len(presented[0]["text"].encode()) <= 2048
+    assert "ValueError: missing result.csv" in presented[0]["text"]
+    assert "not-presented-prefix" not in presented[0]["text"]
+    assert native["structuredContent"]["tool_result"]["output"] == canonical_result
+    assert canonical_value(backend.catalogs[0]) == canonical_value(tuple(offer.mcp_transport_entry() for offer in backend.starts[0].offered_tools))
+    tool_event = next(event for event in rollout.policy_events if event.role == "tool")
+    assert canonical_value(tool_event.content["output"]) == canonical_result
+    assert canonical_value(tool_event.content["supplemental_content"]) == presented
+    evidence = replace(_evidence(tmp_path), rollout_id=request.rollout_id, sandbox_manifest=request.sandbox,
+        model=request.model, assistant_output=rollout.assistant_output, provider_receipt_blake3=rollout.provider_receipt_blake3,
+        policy_events=rollout.policy_events, tool_trace=runtime.trace(), safe_provider_metadata=rollout.safe_metadata)
+    from eva_agent.pipeline.verify import PipelineVerifier
+    from types import SimpleNamespace
+    PipelineVerifier(None)._verify_codex_actor_projection(SimpleNamespace(evidence=evidence, cohort=Cohort.STRONG))
+    materialized = _materialize_agent_judge_evidence(evidence, material_view=material_view)
+    messages = next(row.content for row in materialized.workspace_after.files if row.path == ".eva-agent-judge/actor/messages.json")
+    message_document = json.loads(messages)
+    judge_events = message_document["events"] if material_view == "policy-visible-audit-v2" else message_document
+    judge_tool = next(event for event in judge_events if event["role"] == "tool")
+    assert judge_tool["content"]["supplemental_content"] == presented
+    if material_view == "policy-visible-audit-v2":
+        assert message_document["native_original_mcp_responses"][0]["output"]["result"]["content"] == presented
+    assert b"not-presented-prefix" not in messages
+    assert [row.path for row in workspace.snapshot("after").files] == ["seed.txt"]
+    shown = json.loads(presented[0]["text"][len(DIAGNOSTIC_PREFIX):])
+    persisted = json.loads((tmp_path / "host-execution/execution-diagnostics.json").read_bytes())
+    assert shown["capture_blake3"] == persisted["diagnostic_blake3"]
+    assert "not-presented-prefix" in persisted["streams"]["stdout"]["text"]
+    assert list(temp_root.iterdir()) == []
+    temp_root.rmdir()
+
+
+def test_actor_mcp_schema_rejection_is_bridge_bound_and_never_dispatched(
+    tmp_path: Path,
+) -> None:
+    calls = 0
+    schema = {
+        "type": "object",
+        "properties": {
+            "stage": {"const": "S3"},
+            "code": {"type": "string", "minLength": 1},
+        },
+        "required": ["stage", "code"],
+        "additionalProperties": False,
+    }
+
+    def execute_code(_workspace, _arguments):
+        nonlocal calls
+        calls += 1
+        return {"unexpected": True}
+
+    definition = ToolDefinition(
+        "execute_code", "Execute the exact S3 program.", schema, execute_code
+    )
+    registry = ToolRegistry((definition,))
+    workspace = FilesystemSandbox(
+        tmp_path / "schema-rejection-workspace",
+        DeterministicUUIDFactory("schema-rejection-workspace").new("workspace"),
+        {"seed.txt": b"medical evidence\n"},
+    )
+    runtime = ParallelToolRuntime(
+        workspace=workspace,
+        registry=registry,
+        id_factory=DeterministicUUIDFactory("schema-rejection-runtime"),
+    )
+    bridge = CodexToolExecutionBridge(
+        runtime, id_factory=DeterministicUUIDFactory("schema-rejection-bridge")
+    )
+    offer = CodexToolOffer(
+        fully_qualified_name="evamed/execute_code",
+        description=definition.description,
+        input_schema=schema,
+    )
+    options = CodexThreadOptions(
+        role=CodexRole.STRONG_ACTOR,
+        model="model",
+        provider="provider",
+        cwd=str(tmp_path),
+        sandbox=CodexSandbox.READ_ONLY,
+        offered_tools=(offer,),
+    )
+    transport, temp_root = _transport(tmp_path)
+
+    with transport.open_actor(
+        options, bridge, allow_schema_validation_rejections=True
+    ) as bound:
+        listed, outcomes = _exercise_proxy(
+            bound, ((("execute_code", {"code": "pass"}),),)
+        )
+
+    assert canonical_value(listed[0]["inputSchema"]) == canonical_value(schema)
+    result = outcomes[0][0]
+    assert result["isError"] is True
+    rejection = result["structuredContent"]
+    assert rejection["schema"] == "eva.codex-tool-schema-validation-rejection.v1"
+    assert rejection["fully_qualified_name"] == "evamed/execute_code"
+    assert rejection["arguments_blake3"] == blake3_hex({"code": "pass"})
+    assert rejection["input_schema_blake3"] == blake3_hex(schema)
+    assert rejection["offered_catalog_blake3"] == blake3_hex(
+        (offer.canonical_catalog_entry(),)
+    )
+    assert canonical_value(rejection["validation_issues"]) == canonical_value(
+        (
+            {
+                "validator": "required",
+                "instance_path": (),
+                "schema_path": ("required",),
+                "required_properties": ("stage",),
+                "expected_types": (),
+            },
+        )
+    )
+    assert result["content"] == [
+        {
+            "type": "text",
+            "text": (
+                "Tool arguments were rejected by the exact input schema; no host "
+                "execution occurred. Missing required properties: stage."
+            ),
+        }
+    ]
+    assert rejection["host_execution_attempted"] is False
+    assert rejection["host_result_claimed"] is False
+    assert calls == 0
+    assert runtime.trace().results == ()
+    assert list(temp_root.iterdir()) == []
+    temp_root.rmdir()
+
+
+@pytest.mark.parametrize(
+    "controlled_budget",
+    (True, False),
+    ids=("controlled-budget", "unrelated-provider-failure"),
+)
+def test_actor_schema_rejected_action_terminal_attribution(
+    tmp_path: Path, controlled_budget: bool,
+) -> None:
+    calls = 0
+    schema = {
+        "type": "object",
+        "properties": {
+            "stage": {"const": "S3"},
+            "code": {"type": "string", "minLength": 1},
+        },
+        "required": ["stage", "code"],
+        "additionalProperties": False,
+    }
+
+    def execute_code(_workspace, _arguments):
+        nonlocal calls
+        calls += 1
+        return {"unexpected": True}
+
+    definition = ToolDefinition(
+        "execute_code", "Execute the exact S3 program.", schema, execute_code
+    )
+    registry = ToolRegistry((definition,))
+    workspace = FilesystemSandbox(
+        tmp_path / "schema-budget-workspace",
+        DeterministicUUIDFactory("schema-budget-workspace").new("workspace"),
+        {"seed.txt": b"medical evidence\n"},
+    )
+    runtime = ParallelToolRuntime(
+        workspace=workspace,
+        registry=registry,
+        id_factory=DeterministicUUIDFactory("schema-budget-runtime"),
+    )
+    manifest = _manifest("schema-budget-manifest")
+    request = RolloutRequest(
+        rollout_id=DeterministicUUIDFactory("schema-budget-rollout").new("rollout"),
+        sandbox=manifest,
+        model=ModelTarget(Cohort.STRONG, "strong-model", "fake-provider"),
+        policy_visible_context={"question": "fixture"},
+        available_tools=registry.public_schemas(),
+    )
+    backend = _MCPBackend(
+        server="evamed",
+        groups=((('execute_code', {"code": "pass"}),),),
+        final_text="provider stopped at its exact token budget",
+        tool_status="failed",
+        turn_status="failed",
+        strip_mcp_is_error=True,
+    )
+    transport, temp_root = _transport(tmp_path)
+
+    def options_factory(request, cwd, offers, bridge):
+        del bridge
+        return CodexThreadOptions(
+            role=CodexRole.STRONG_ACTOR,
+            model=request.model.model_id,
+            provider=request.model.provider,
+            cwd=cwd,
+            sandbox=CodexSandbox.READ_ONLY,
+            offered_tools=offers,
+        )
+
+    adapter = CodexRolloutAdapter(
+        _RuntimeFactory(backend, "schema-budget-backend"),
+        options_factory,
+        id_factory=DeterministicUUIDFactory("schema-budget-adapter"),
+        turn_mcp_factory=transport,
+        controlled_budget_terminal=(
+            lambda: {
+                "kind": "total_output_budget",
+                "count": 8192,
+                "limit": 8192,
+                "requests": 5,
+            }
+        ) if controlled_budget else None,
+        allow_schema_validation_rejections=True,
+    )
+    before = workspace.snapshot("schema-budget-before")
+    if not controlled_budget:
+        with pytest.raises(CodexPipelineError, match="status is not completed"):
+            adapter.run(request, runtime)
+        after = workspace.snapshot("schema-provider-failure-after")
+        assert calls == 0
+        assert before.tree_blake3 == after.tree_blake3
+        assert runtime.trace().results == ()
+        assert list(temp_root.iterdir()) == []
+        temp_root.rmdir()
+        return
+    rollout = adapter.run(request, runtime)
+    after = workspace.snapshot("schema-budget-after")
+
+    assert calls == 0
+    assert before.tree_blake3 == after.tree_blake3
+    assert runtime.trace().results == ()
+    assert rollout.safe_metadata["schema"] == (
+        "eva.codex-provider-rollout-projection.v3-controlled-budget"
+    )
+    assert rollout.safe_metadata["controlled_budget_termination"]["budget"] == {
+        "kind": "total_output_budget",
+        "count": 8192,
+        "limit": 8192,
+        "requests": 5,
+    }
+    retained = rollout.safe_metadata["schema_validation_rejections"]
+    assert len(retained) == 1
+    catalog = rollout.safe_metadata["schema_validation_rejection_catalog"]
+    assert len(catalog) == 1
+    assert canonical_value(catalog[0]["input_schema"]) == canonical_value(schema)
+    receipt = rollout.safe_metadata["codex_turn_receipt"]
+    failed_call = receipt["tool_calls"][0]
+    assert failed_call["status"] == "failed"
+    assert canonical_value(failed_call["arguments"]) == {"code": "pass"}
+    assert retained[0]["codex_tool_call_id"] == failed_call["tool_call_id"]
+    assert retained[0]["codex_tool_call_receipt_blake3"] == failed_call[
+        "receipt_blake3"
+    ]
+    rejection = retained[0]["rejection"]
+    assert rejection["host_execution_attempted"] is False
+    assert rejection["host_result_claimed"] is False
+    tool_events = [event for event in rollout.policy_events if event.role == "tool"]
+    assert len(tool_events) == 1
+    assert canonical_value(tool_events[0].content["schema_validation_rejection"]) == canonical_value(
+        rejection
+    )
+    assert list(temp_root.iterdir()) == []
+    temp_root.rmdir()
+
+
+def test_judge_real_mcp_process_reads_immutable_evidence_once_without_replay(
+    tmp_path: Path,
+) -> None:
+    rubric = _rubric()
+    evidence = _evidence(tmp_path)
+    rows = []
+    hard_passed = True
+    for raw in rubric.items:
+        item = canonical_value(raw)
+        score_bps = max(level["score_bps"] for level in item["partial_credit"]["levels"])
+        gate = item.get("hard_gate")
+        if isinstance(gate, dict) and score_bps < gate["minimum_score_bps"]:
+            hard_passed = False
+        rows.append(
+            {
+                "item_id": item["item_id"],
+                "score": score_bps / 10_000,
+                "evidence_refs": ["workspace:after:seed.txt"],
+                "rationale": "Inspected the immutable committed content.",
+            }
+        )
+    backend = _MCPBackend(
+        server="evamed-judge",
+        groups=(
+            (
+                (
+                    "workspace_read",
+                    {"snapshot": "after", "path": "seed.txt", "offset": 0, "max_bytes": 65536},
+                ),
+                (
+                    "workspace_search",
+                    {
+                        "snapshot": "after",
+                        "query": "medical",
+                        "path_prefix": None,
+                        "case_sensitive": True,
+                        "max_matches": 10,
+                    },
+                ),
+            ),
+        ),
+        final_text=json.dumps(
+            {
+                "item_scores": rows,
+                "hard_gates_passed": hard_passed,
+                "summary": "Immutable workspace inspected.",
+            },
+            sort_keys=True,
+        ),
+    )
+    transport, temp_root = _transport(tmp_path)
+    judge_cwd = tmp_path / "judge-cwd"
+    judge_cwd.mkdir()
+
+    def options_factory(request: JudgeRequest, offers: tuple[CodexToolOffer, ...]):
+        return CodexThreadOptions(
+            role=CodexRole.JUDGE,
+            model=request.judge_model_id,
+            provider="anthropic",
+            cwd=str(judge_cwd),
+            sandbox=CodexSandbox.READ_ONLY,
+            offered_tools=offers,
+        )
+
+    judge = CodexOpus5AgentJudge(
+        _RuntimeFactory(backend, "turn-mcp-judge-runtime"),
+        options_factory,
+        model_id="claude-opus-5",
+        id_factory=DeterministicUUIDFactory("turn-mcp-judge-adapter"),
+        turn_mcp_factory=transport,
+        maximum_parallel_tools=8,
+    )
+    request = JudgeRequest(
+        judgment_id=DeterministicUUIDFactory("turn-mcp-judgment").new("judgment"),
+        judge_model_id="claude-opus-5",
+        policy_visible_context=evidence.policy_visible_context,
+        workspace_evidence=evidence,
+        judge_only_reference={"reference_answer": "fixture"},
+    )
+    assessment = judge.judge(request, rubric)
+
+    # Exactly the two live MCP calls exist. A post-turn replay would either
+    # add another frontier/results or trip reused identities.
+    assert len(assessment.agent_trace.results) == 2
+    assert assessment.agent_trace.frontier_count == 1
+    assert assessment.agent_trace.max_parallelism_observed == 2
+    assert assessment.agent_trace.content_inspection_count == 2
+    assert assessment.agent_trace.retry_count == 0
+    assert assessment.agent_trace.inspected_evidence_refs == (
+        "workspace:after:seed.txt",
+    )
+    assert [row["name"] for row in backend.catalogs[0]] == [
+        "workspace_diff", "workspace_list", "workspace_read", "workspace_search"
+    ]
+    assert all(offer.visibility == "judge-only" for offer in backend.starts[0].offered_tools)
+    assert backend.open_count == backend.close_count == 1
+    assert list(temp_root.iterdir()) == []
+    temp_root.rmdir()
+
+
+class _RecordingExecutor:
+    def __init__(self, variant: str) -> None:
+        self.variant = variant
+        self.calls: list[tuple[tuple[str, Mapping[str, Any]], ...]] = []
+
+    def execute_group(self, calls):
+        group = tuple(calls)
+        self.calls.append(group)
+        return tuple({"variant": self.variant, "arguments": arguments} for _, arguments in group)
+
+
+def test_each_turn_exposes_one_exact_schema_variant_and_rejects_bad_nonce(
+    tmp_path: Path,
+) -> None:
+    transport, temp_root = _transport(tmp_path)
+    schemas = (
+        {
+            "type": "object",
+            "properties": {"gene": {"type": "string"}},
+            "required": ["gene"],
+            "additionalProperties": False,
+        },
+        {
+            "type": "object",
+            "properties": {"doi": {"type": "string"}},
+            "required": ["doi"],
+            "additionalProperties": False,
+        },
+    )
+    catalogs = []
+    for ordinal, (schema, arguments) in enumerate(
+        zip(schemas, ({"gene": "BRCA1"}, {"doi": "10.1/example"}), strict=True)
+    ):
+        executor = _RecordingExecutor(str(ordinal))
+        options = CodexThreadOptions(
+            role=CodexRole.STRONG_ACTOR,
+            model="model",
+            provider="provider",
+            cwd=str(tmp_path),
+            sandbox=CodexSandbox.WORKSPACE_WRITE,
+            offered_tools=(
+                CodexToolOffer(
+                    fully_qualified_name="evamed/lookup",
+                    description="Candidate-specific lookup.",
+                    input_schema=schema,
+                ),
+            ),
+        )
+        session = transport.open_actor(options, executor)
+        with session as bound:
+            mode = stat.S_IMODE(session.broker.socket_path.stat().st_mode)
+            directory_mode = stat.S_IMODE(session.broker.directory.stat().st_mode)
+            assert mode == 0o600 and directory_mode == 0o700
+
+            # A process that merely discovers the socket cannot call a tool;
+            # the per-turn nonce is required and authentication fails before
+            # the executor boundary.
+            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
+                client.connect(str(session.broker.socket_path))
+                client.sendall(
+                    json.dumps(
+                        {
+                            "nonce": "wrong",
+                            "request": {
+                                "jsonrpc": "2.0",
+                                "id": "bad-auth",
+                                "method": "tools/call",
+                                "params": {"name": "lookup", "arguments": arguments},
+                            },
+                        }
+                    ).encode()
+                    + b"\n"
+                )
+                response = json.loads(client.makefile("rb").readline())
+            assert response["response"]["error"]["message"] == "TurnMCPError"
+            assert executor.calls == []
+
+            listed, outcomes = _exercise_proxy(bound, ((("lookup", arguments),),))
+            catalogs.append(listed)
+            assert outcomes[0][0]["structuredContent"]["variant"] == str(ordinal)
+        assert not session.broker.directory.exists()
+        assert executor.calls == [(("lookup", arguments),)]
+
+    assert canonical_value(catalogs[0][0]["inputSchema"]) == canonical_value(schemas[0])
+    assert canonical_value(catalogs[1][0]["inputSchema"]) == canonical_value(schemas[1])
+    assert catalogs[0] != catalogs[1]
+    assert list(temp_root.iterdir()) == []
+    temp_root.rmdir()
+
+
+def test_real_mcp_process_batches_more_than_sixteen_independent_calls(
+    tmp_path: Path,
+) -> None:
+    temp_root = Path(tempfile.mkdtemp(prefix="eva-mcp-wide-test-", dir="/tmp"))
+    transport = TurnMCPBridgeFactory(
+        proxy_python=Path(sys.executable).resolve(),
+        proxy_script=PROXY.resolve(),
+        temp_root=temp_root,
+        maximum_parallel_tools=64,
+    )
+    class SlowFirstExecutor(_RecordingExecutor):
+        def execute_group(self, values):
+            result = super().execute_group(values)
+            if len(self.calls) == 1:
+                # Keep the first small arrival wave live while the remaining
+                # proxy workers connect; the next broker frontier then proves
+                # an actual execution group wider than the historical 16 cap.
+                time.sleep(0.1)
+            return result
+
+    executor = SlowFirstExecutor("wide")
+    options = CodexThreadOptions(
+        role=CodexRole.STRONG_ACTOR,
+        model="model",
+        provider="provider",
+        cwd=str(tmp_path),
+        sandbox=CodexSandbox.WORKSPACE_WRITE,
+        offered_tools=(
+            CodexToolOffer(
+                fully_qualified_name="evamed/inspect",
+                description="Inspect one independent item.",
+                input_schema={
+                    "type": "object",
+                    "properties": {"ordinal": {"type": "integer"}},
+                    "required": ["ordinal"],
+                    "additionalProperties": False,
+                },
+                parallel_safe=True,
+                read_only=True,
+            ),
+        ),
+    )
+    calls = tuple(("inspect", {"ordinal": index}) for index in range(32))
+
+    with transport.open_actor(options, executor) as bound:
+        _listed, outcomes = _exercise_proxy(bound, (calls,))
+
+    assert len(outcomes[0]) == 32
+    executed = [arguments["ordinal"] for group in executor.calls for _, arguments in group]
+    assert sorted(executed) == list(range(32))
+    assert max(map(len, executor.calls)) > 16
+    assert list(temp_root.iterdir()) == []
+    temp_root.rmdir()
+
+
+def test_turn_mcp_cleans_private_topology_when_provider_turn_raises(tmp_path: Path) -> None:
+    transport, temp_root = _transport(tmp_path)
+    executor = _RecordingExecutor("unused")
+    options = CodexThreadOptions(
+        role=CodexRole.STRONG_ACTOR,
+        model="model",
+        provider="provider",
+        cwd=str(tmp_path),
+        sandbox=CodexSandbox.WORKSPACE_WRITE,
+        offered_tools=(
+            CodexToolOffer(
+                fully_qualified_name="evamed/only",
+                description="Only this candidate tool.",
+                input_schema={
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                    "additionalProperties": False,
+                },
+            ),
+        ),
+    )
+    session = transport.open_actor(options, executor)
+    with pytest.raises(RuntimeError, match="provider failed"):
+        with session:
+            raise RuntimeError("provider failed")
+    assert executor.calls == []
+    assert not session.broker.directory.exists()
+    assert list(temp_root.iterdir()) == []
+    temp_root.rmdir()

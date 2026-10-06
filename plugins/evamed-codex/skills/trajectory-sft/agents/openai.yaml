@@ -1,0 +1,4 @@
+interface:
+  display_name: "Trajectory SFT"
+  short_description: "Slice only signed admitted strong trajectories"
+  default_prompt: "Verify signed admission and slice this strong trajectory into lineage-complete atomic SFT examples."

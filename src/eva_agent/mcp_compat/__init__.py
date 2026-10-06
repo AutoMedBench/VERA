@@ -1,0 +1,53 @@
+"""MCP compatibility adapters that preserve canonical EvaMed schemas."""
+
+from .catalog import (
+    CATALOG_SCHEMA,
+    MCPCompatibilityError,
+    MCPToolCatalog,
+    ToolAnnotations,
+    build_mcp_catalog,
+    map_policy_tools,
+    map_skill_catalog,
+    map_tool_definitions,
+    policy_rows_to_mcp_tools,
+    skill_catalog_to_mcp_catalog,
+    skill_catalog_to_mcp_tools,
+    tool_definitions_to_mcp_catalog,
+    tool_definitions_to_mcp_tools,
+    verify_mcp_catalog,
+)
+from .inventory import (
+    POLICY_BINDING_SCHEMA,
+    POLICY_INVENTORY_SCHEMA,
+    PolicyCatalogBinding,
+    PolicyCatalogInventory,
+    bind_policy_catalog,
+    build_policy_catalog_inventory,
+    verify_policy_catalog_binding,
+    verify_policy_catalog_inventory,
+)
+
+__all__ = [
+    "CATALOG_SCHEMA",
+    "MCPCompatibilityError",
+    "MCPToolCatalog",
+    "POLICY_BINDING_SCHEMA",
+    "POLICY_INVENTORY_SCHEMA",
+    "PolicyCatalogBinding",
+    "PolicyCatalogInventory",
+    "ToolAnnotations",
+    "bind_policy_catalog",
+    "build_mcp_catalog",
+    "build_policy_catalog_inventory",
+    "map_policy_tools",
+    "map_skill_catalog",
+    "map_tool_definitions",
+    "policy_rows_to_mcp_tools",
+    "skill_catalog_to_mcp_catalog",
+    "skill_catalog_to_mcp_tools",
+    "tool_definitions_to_mcp_catalog",
+    "tool_definitions_to_mcp_tools",
+    "verify_mcp_catalog",
+    "verify_policy_catalog_binding",
+    "verify_policy_catalog_inventory",
+]

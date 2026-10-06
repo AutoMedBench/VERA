@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://service.example.invalid/schemas/rubric-registry.v1.schema.json",
+  "title": "EVA-Agent rubric registry v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "registry_id", "registry_version", "rubrics"],
+  "properties": {
+    "schema": {"const": "eva.rubric-registry.v1"},
+    "registry_id": {"type": "string", "format": "uuid"},
+    "registry_version": {"type": "integer", "minimum": 1},
+    "rubrics": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/rubric"}
+    }
+  },
+  "$defs": {
+    "stage": {"enum": ["S1", "S2", "S3", "S4", "S5", "E2E"]},
+    "domain": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+      "minLength": 2,
+      "maxLength": 80
+    },
+    "rubric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rubric_id", "version", "domain", "stage", "title",
+        "description", "items"
+      ],
+      "properties": {
+        "rubric_id": {"type": "string", "format": "uuid"},
+        "version": {"type": "integer", "minimum": 1},
+        "domain": {"$ref": "#/$defs/domain"},
+        "stage": {"$ref": "#/$defs/stage"},
+        "title": {"type": "string", "minLength": 1, "maxLength": 200},
+        "description": {"type": "string", "minLength": 1, "maxLength": 2000},
+        "items": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 10,
+          "items": {"$ref": "#/$defs/rubric_item"}
+        }
+      }
+    },
+    "rubric_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "item_id", "title", "description", "atomic", "observable",
+        "weight", "evidence_selectors", "partial_credit", "provenance",
+        "labels"
+      ],
+      "properties": {
+        "item_id": {"type": "string", "format": "uuid"},
+        "title": {"type": "string", "minLength": 1, "maxLength": 160},
+        "description": {"type": "string", "minLength": 1, "maxLength": 2000},
+        "atomic": {"const": true},
+        "observable": {"const": true},
+        "weight": {"type": "integer", "minimum": 1, "maximum": 10000},
+        "evidence_selectors": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "items": {"$ref": "#/$defs/evidence_selector"}
+        },
+        "partial_credit": {"$ref": "#/$defs/partial_credit"},
+        "hard_gate": {"$ref": "#/$defs/hard_gate"},
+        "provenance": {"$ref": "#/$defs/provenance"},
+        "labels": {
+          "type": "array",
+          "maxItems": 20,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+            "maxLength": 80
+          }
+        }
+      }
+    },
+    "evidence_selector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "selector_id", "source", "kind", "query", "evidence_stage",
+        "required", "aggregation"
+      ],
+      "properties": {
+        "selector_id": {"type": "string", "format": "uuid"},
+        "source": {"enum": ["context", "workspace"]},
+        "kind": {
+          "enum": [
+            "json_pointer", "event_type", "text_query", "path",
+            "glob", "file_content", "workspace_diff"
+          ]
+        },
+        "query": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "evidence_stage": {"$ref": "#/$defs/stage"},
+        "required": {"type": "boolean"},
+        "aggregation": {"enum": ["any", "all", "count"]}
+      }
+    },
+    "partial_credit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "levels"],
+      "properties": {
+        "mode": {"enum": ["binary", "levels"]},
+        "levels": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 10,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["score_bps", "criterion"],
+            "properties": {
+              "score_bps": {"type": "integer", "minimum": 0, "maximum": 10000},
+              "criterion": {"type": "string", "minLength": 1, "maxLength": 1000}
+            }
+          }
+        }
+      }
+    },
+    "hard_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["category", "minimum_score_bps"],
+      "properties": {
+        "category": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "maxLength": 80
+        },
+        "minimum_score_bps": {"type": "integer", "minimum": 1, "maximum": 10000}
+      }
+    },
+    "provenance": {
+      "oneOf": [
+        {"$ref": "#/$defs/benchmark_provenance"},
+        {"$ref": "#/$defs/supplemental_provenance"}
+      ]
+    },
+    "benchmark_provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "origin", "source_benchmark", "source_file", "source_revision",
+        "domain", "stage", "extraction_status"
+      ],
+      "properties": {
+        "origin": {"const": "benchmark"},
+        "source_benchmark": {"type": "string", "minLength": 1, "maxLength": 160},
+        "source_file": {"type": "string", "minLength": 1, "maxLength": 500},
+        "source_revision": {"type": "string", "minLength": 1, "maxLength": 160},
+        "domain": {"$ref": "#/$defs/domain"},
+        "stage": {"$ref": "#/$defs/stage"},
+        "extraction_status": {
+          "enum": ["extracted", "adapted", "human_verified", "pending_review"]
+        }
+      }
+    },
+    "supplemental_provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["origin", "supplemental_label", "rationale"],
+      "properties": {
+        "origin": {"const": "supplemental"},
+        "supplemental_label": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "maxLength": 80
+        },
+        "rationale": {"type": "string", "minLength": 1, "maxLength": 1000}
+      }
+    }
+  }
+}

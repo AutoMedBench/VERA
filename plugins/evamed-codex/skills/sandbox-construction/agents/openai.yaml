@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sandbox Construction"
+  short_description: "Build a rubric-bound answer-free sandbox"
+  default_prompt: "Construct and locally verify this benchmark-derived EVA sandbox without exposing private rubric material."

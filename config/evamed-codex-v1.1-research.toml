@@ -1,0 +1,34 @@
+# Opt-in defaults for the pinned Codex 0.153.4 research harness.
+# Caller overrides retain precedence. No model/provider/security/env settings.
+[features]
+apps = false
+browser_use = false
+browser_use_external = false
+browser_use_full_cdp_access = false
+computer_use = false
+in_app_browser = false
+in_app_chat = false
+in_app_dictation = false
+in_app_local_automation = false
+in_app_updates = false
+realtime_conversation = false
+image_generation = false
+personality = false
+recommended_plugins = false
+remote_plugin = false
+plugin_sharing = false
+tool_suggest = false
+hooks = false
+code_mode = false
+code_mode_host = false
+context_management = false
+
+# Keep actual research capabilities; these flags are not performance proofs.
+plugins = true
+skill_search = true
+shell_tool = true
+unified_exec = true
+view_image = true
+multi_agent = true
+memories = true
+compaction_image_budget = true
